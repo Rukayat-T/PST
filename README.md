@@ -13,5 +13,5 @@ This repository contains the codebase for the PST project, using NestJS for the 
 
 Technologies Used
 Backend: NestJS, TypeORM, PostgreSQL
-Frontend: ReactJS, tailwind css
+Frontend: NextJS, tailwind css
 Authentication: JWT-based authentication system
