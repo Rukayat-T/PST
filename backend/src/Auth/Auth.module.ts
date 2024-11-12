@@ -21,6 +21,6 @@ import { StudentProfile } from 'src/entities/StudentProfile.entity';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtGuard, JwtStrategy],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, AuthService],
 })
 export class AuthModule {}

@@ -11,6 +11,7 @@ import { CreateTutorProfileDto } from 'src/DTOs/CreateTutorProfile.dto';
 import { StudentProfile } from '../entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { LoginDto } from 'src/DTOs/LoginDto.dto';
+import { response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -274,42 +275,55 @@ export class AuthService {
 
   async validateUserPassword(password: string, user: UserEntity): Promise<any> {
     if (user) {
+      console.log(user);
       return await bcrypt.compare(password, user.password);
     }
   }
 
   async login(dto: LoginDto): Promise<any> {
-    const findUser = await this.userRepository.findOne({
-      where: { email: dto.email },
-    });
+    try {
+      const findUser = await this.userRepository.findOne({
+        where: { email: dto.email },
+      });
 
-    if (findUser) {
-      const validate = await this.validateUserPassword(dto.password, findUser);
-      if (validate == true) {
-        const user = {
-          id: findUser.id,
-          name: findUser.name,
-          email: findUser.email,
-          role: findUser.role,
-          profile: findUser.studentProfile
-            ? findUser.studentProfile
-            : findUser.tutorProfile,
-        };
+      if (findUser) {
+        const validate = await this.validateUserPassword(
+          dto.password,
+          findUser,
+        );
+        if (validate == true) {
+          const user = {
+            id: findUser.id,
+            name: findUser.name,
+            email: findUser.email,
+            role: findUser.role,
+            profile: findUser.studentProfile
+              ? findUser.studentProfile
+              : findUser.tutorProfile,
+          };
 
-        const token = await this.jwtService.signAsync({ user });
-        return {
-          token: token,
-        };
-      } else {
-        return {
-          status: 400,
-          message: 'password is incorrect',
-        };
+          const token = await this.jwtService.signAsync({ user });
+          return {
+            token: token,
+          };
+        } else {
+          return {
+            status: 400,
+            message: 'password is incorrect',
+          };
+        }
       }
+      return {
+        status: 400,
+        message: 'email is incorrect',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: 500,
+        message: 'bad request',
+        response: error.message,
+      };
     }
-    return {
-      status: 400,
-      message: 'email is incorrect',
-    };
   }
 }

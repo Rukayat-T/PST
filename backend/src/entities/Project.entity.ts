@@ -44,7 +44,7 @@ export class ProjectEntity {
   @Column('text')
   description: string;
 
-  @Column()
+  @Column({ nullable: true })
   expectedDeliverable: string;
 
   @Column('text', { array: true, nullable: true })

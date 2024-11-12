@@ -70,7 +70,7 @@ export class ProposalService {
         };
       }
       const proposal = await this.proposalRepository.findOne({
-        where: { id: proposalId },
+        where: { id: proposalId, created_by: { id: studentId } },
       });
       if (!proposal) {
         return {
@@ -79,6 +79,7 @@ export class ProposalService {
         };
       }
       proposal.status = ProposalStatus.WITHDRAWN;
+      await this.proposalRepository.save(proposal);
       return {
         status: 201,
         message: 'successful',
@@ -99,7 +100,9 @@ export class ProposalService {
     proposalId: number,
   ): Promise<BaseResponse> {
     try {
+      console.log('yopo');
       const tutor = (await this.authService.getTutor(tutorId)).response;
+      console.log(tutor);
       if (!tutor) {
         return {
           status: 404,
@@ -107,7 +110,7 @@ export class ProposalService {
         };
       }
       const proposal = await this.proposalRepository.findOne({
-        where: { id: proposalId },
+        where: { id: proposalId, tutor: { id: tutorId } },
       });
       if (!proposal) {
         return {
@@ -116,6 +119,7 @@ export class ProposalService {
         };
       }
       proposal.status = ProposalStatus.APPROVED;
+      await this.proposalRepository.save(proposal);
       return {
         status: 201,
         message: 'successful',
@@ -144,7 +148,7 @@ export class ProposalService {
         };
       }
       const proposal = await this.proposalRepository.findOne({
-        where: { id: proposalId },
+        where: { id: proposalId, tutor: { id: tutorId } },
       });
       if (!proposal) {
         return {
@@ -153,6 +157,7 @@ export class ProposalService {
         };
       }
       proposal.status = ProposalStatus.REJECTED;
+      await this.proposalRepository.save(proposal);
       return {
         status: 201,
         message: 'successful',
@@ -178,7 +183,7 @@ export class ProposalService {
         };
       }
       const proposals = await this.proposalRepository.find({
-        where: { created_by: student },
+        where: { created_by: { id: studentId } },
       });
       if (proposals.length != 0) {
         return {
@@ -211,7 +216,7 @@ export class ProposalService {
         };
       }
       const proposals = await this.proposalRepository.find({
-        where: { tutor: tutor },
+        where: { tutor: { id: tutorId } },
       });
       if (proposals.length != 0) {
         return {

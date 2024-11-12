@@ -15,6 +15,8 @@ import { ModulesEntity } from './entities/Modules';
 import { ProposalEntity } from './entities/Proposal.entity';
 import { ProposalController } from './controllers/ProposalController.controller';
 import { ProposalService } from './services/ProposalService.service';
+import { AuthService } from './Auth/Auth.service';
+import { MailModule } from './Mail/Mail.module';
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { ProposalService } from './services/ProposalService.service';
       synchronize: true,
     }),
     AuthModule,
+    MailModule,
     TypeOrmModule.forFeature([
       ProjectEntity,
       ChosenProject,
@@ -37,7 +40,7 @@ import { ProposalService } from './services/ProposalService.service';
       ProposalEntity,
     ]),
   ],
-  controllers: [AppController, ProjectController, ProposalController],
-  providers: [AppService, ProjectService, ProposalService],
+  controllers: [ProjectController, ProposalController, AppController],
+  providers: [ProjectService, ProposalService],
 })
 export class AppModule {}
