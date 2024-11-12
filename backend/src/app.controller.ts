@@ -1,12 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { MailService } from './Mail/Mail.service';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('test')
+@Controller('test')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
+  constructor(private readonly mailService: MailService) {}
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHello(): Promise<any> {
+    return this.mailService.sendMail();
   }
 }
