@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './Auth.controller';
 import { AuthService } from './Auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserEntity } from '../entities/UserEntity.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtGuard } from 'src/guards/jwt.guard';
@@ -11,9 +12,12 @@ import { StudentProfile } from 'src/entities/StudentProfile.entity';
 
 @Module({
   imports: [
+    ConfigModule,
     JwtModule.registerAsync({
-      useFactory: () => ({
-        secret: 'CLKyecJrBbq3TyIN',
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '3600s' },
       }),
     }),
