@@ -39,13 +39,16 @@ export class EditProjectDto {
   // @IsUrl({}, { each: true })
   resources?: string[];
 
-  @IsOptional()
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
   @ApiProperty({
-    example: 'deep_learning',
-    description: 'project tags',
+    description: 'Tags related to the project',
+    example: ['machine learning', 'data science'],
+    required: false,
+    isArray: true,
+    type: String,
   })
-  tags?: string[];
+  tags: string[]; // array cause can have multiple
 
   @IsString()
   @ApiProperty({

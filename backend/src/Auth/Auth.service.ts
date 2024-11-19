@@ -275,7 +275,6 @@ export class AuthService {
 
   async validateUserPassword(password: string, user: UserEntity): Promise<any> {
     if (user) {
-      console.log(user);
       return await bcrypt.compare(password, user.password);
     }
   }
@@ -284,6 +283,10 @@ export class AuthService {
     try {
       const findUser = await this.userRepository.findOne({
         where: { email: dto.email },
+        relations: {
+          tutorProfile: true,
+          studentProfile: true,
+        },
       });
 
       if (findUser) {
@@ -297,9 +300,9 @@ export class AuthService {
             name: findUser.name,
             email: findUser.email,
             role: findUser.role,
-            profile: findUser.studentProfile
-              ? findUser.studentProfile
-              : findUser.tutorProfile,
+            profileId: findUser.studentProfile
+              ? findUser.studentProfile.id
+              : findUser.tutorProfile.id,
           };
 
           const token = await this.jwtService.signAsync({ user });
