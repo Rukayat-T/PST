@@ -243,9 +243,11 @@ export class ProjectService {
         'project.createdAt',
         'project.updatedAt',
         'tutor.id AS tutor_id',
-        'MAX(user.name) AS tutorname', // Aggregated tutor name
-        'COUNT(chosenProjects.id) AS popularity', // Count of chosen projects
+        // 'MAX(user.name) AS tutorname', // Aggregated tutor name
+        // 'COUNT(chosenProjects.id) AS popularity', // Count of chosen projects
       ])
+      .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
+      .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
       .groupBy('project.id')
       .addGroupBy('tutor.id')
       .addGroupBy('user.id')
@@ -300,12 +302,12 @@ export class ProjectService {
     // const [sql, parameters] = query.getQueryAndParameters();
     // console.log('Generated SQL Query:', sql);
     // console.log('Parameters:', parameters);
+
     // Execute the query
-    const [projects, totalCount] = await query.getManyAndCount(); // This will return the total count of records
+    const projects = await query.getRawMany();
 
-    // Calculate the total number of pages
+    const totalCount = projects.length;
     const totalPages = Math.ceil(totalCount / limit);
-
     return {
       status: 201,
       message: 'Projects fetched successfully',
