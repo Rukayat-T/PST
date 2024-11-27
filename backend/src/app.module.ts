@@ -30,6 +30,10 @@ import { MailModule } from './Mail/Mail.module';
       database: process.env.POSTGRES_DATABASE,
       autoLoadEntities: true,
       synchronize: true,
+      ssl: {
+        rejectUnauthorized: false,
+        // ca: process.env.CERTIFICATE.toString(),
+      },
     }),
     AuthModule,
     MailModule,
