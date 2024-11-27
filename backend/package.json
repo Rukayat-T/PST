@@ -20,7 +20,6 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/cli": "^10.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/class-transformer": "^0.4.0",
     "@nestjs/class-validator": "^0.13.1",
@@ -43,6 +42,7 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
     "@types/bcrypt": "^5.0.2",
