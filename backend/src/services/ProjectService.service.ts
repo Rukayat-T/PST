@@ -256,7 +256,8 @@ export class ProjectService {
       .addGroupBy('project.resources')
       .addGroupBy('project.createdAt')
       .addGroupBy('project.updatedAt')
-      .orderBy('popularity', 'DESC');
+      .orderBy('project.id', 'ASC');
+    // .orderBy('popularity', 'DESC');
 
     // Search by project title or tags
     if (search) {
@@ -289,9 +290,12 @@ export class ProjectService {
     }
 
     // Apply pagination (skip and take)
-    query.skip((page - 1) * limit); // Calculate skip
-    // query.take(limit); // Limit the number of results per page
-    query.limit(limit);
+    // query.skip((page - 1) * limit); // Calculate skip
+    // // query.take(limit); // Limit the number of results per page
+    // query.limit(limit);
+
+    const offset = (page - 1) * limit;
+    query.skip(offset).take(limit);
 
     // const [sql, parameters] = query.getQueryAndParameters();
     // console.log('Generated SQL Query:', sql);

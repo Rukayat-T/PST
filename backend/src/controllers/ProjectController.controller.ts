@@ -145,7 +145,7 @@ export class ProjectController {
     @Query('sortBy') sortBy: string,
     @Query('sortOrder') sortOrder: string,
     @Query('page') page: number = 1, // Default to page 1 if not provided
-    @Query('limit') limit: number = 10, // Default to 10 results per page if not provided
+    @Query('limit') limit: number = 9, // Default to 9 results per page if not provided
   ): Promise<BaseResponse> {
     // Prepare the filters object
     const filters = {
