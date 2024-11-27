@@ -9,7 +9,7 @@ import { ProjectEntity } from 'src/entities/Project.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
@@ -88,33 +88,242 @@ export class ProjectService {
     }
   }
 
-  async getAllProjects(): Promise<BaseResponse> {
-    try {
-      const projects = await this.projectRepository.find();
-      if (projects) {
-        return {
-          status: 201,
-          message: 'successful',
-          response: projects,
-        };
-      }
-      return {
-        status: 404,
-        message: 'There are no projects',
-      };
-    } catch (error) {
-      return {
-        status: 400,
-        message: 'Bad Request',
-        response: error,
-      };
+  // async getAllProjects(): Promise<BaseResponse> {
+  //   try {
+  //     const projects = await this.projectRepository.find({
+  //       relations: {
+  //         tutor: true,
+  //         chosenProjects: true,
+  //         prerequisiteModules: true,
+  //       },
+  //     });
+  //     if (projects) {
+  //       return {
+  //         status: 201,
+  //         message: 'successful',
+  //         response: projects,
+  //       };
+  //     }
+  //     return {
+  //       status: 404,
+  //       message: 'There are no projects',
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       status: 400,
+  //       message: 'Bad Request',
+  //       response: error,
+  //     };
+  //   }
+  // }
+
+  //   async getAllProjects(filters: any): Promise<BaseResponse> {
+  //     const { search, modules, tutorId, sortBy, sortOrder } = filters;
+
+  //     // Initialize query builder
+  //     const query = this.projectRepository
+  //       .createQueryBuilder('project')
+  //       .leftJoin('project.chosenProjects', 'chosenProjects')
+  //       .leftJoin('project.prerequisiteModules', 'prerequisiteModules')
+  //       .leftJoin('project.tutor', 'tutor')
+  //       .leftJoin('tutor.user', 'user')
+  //       .select([
+  //         'project.id',
+  //         'project.title',
+  //         'project.description',
+  //         'project.expectedDeliverable',
+  //         'project.tags',
+  //         'project.resources',
+  //         'project.createdAt',
+  //         'project.updatedAt',
+  //         'tutor.id',
+  //         'MAX(user.name) AS tutorname',
+  //         'COUNT(chosenProjects.id) AS popularity',
+  //       ])
+  //       .groupBy('chosenProjects.id')
+  //       .addGroupBy('project.id')
+  //       .addGroupBy('tutor.id')
+  //       .addGroupBy('user.id') // Group by user fields
+  //       .addGroupBy('project.title')
+  //       .addGroupBy('project.description')
+  //       .addGroupBy('project.expectedDeliverable')
+  //       .addGroupBy('project.resources')
+  //       .addGroupBy('project.createdAt')
+  //       .addGroupBy('project.updatedAt')
+  //       .orderBy('popularity', 'DESC');
+
+  //     const [sql, parameters] = query.getQueryAndParameters();
+  //     console.log('Generated SQL Query:', sql);
+  //     console.log('Parameters:', parameters);
+
+  //     // Search by project title
+  //     // if (search) {
+  //     //   query.andWhere('project.title ILIKE :search', { search: `%${search}%` });
+  //     // }
+
+  //     if (search) {
+  //       query.andWhere(
+  //         new Brackets((qb) => {
+  //           qb.where('project.title ILIKE :search', {
+  //             search: `%${search}%`,
+  //           }).orWhere('project.tags && ARRAY[:...tags]', { tags: [search] });
+  //         }),
+  //       );
+  //     }
+
+  //     // Filter by tags
+  //     // if (tags && tags.length) {
+  //     //   query.andWhere('project.tags && ARRAY[:...tags]', { tags });
+  //     // }
+
+  //     if (modules) {
+  //       query.andWhere('prerequisiteModules.id = :modules', { modules });
+  //     }
+
+  //     // Filter by tutor
+  //     if (tutorId) {
+  //       query.andWhere('tutor.id = :tutorId', { tutorId });
+  //     }
+
+  //     // Sort by popularity (number of chosenProjects) or recent (creation date)
+  //     if (sortBy === 'popularity') {
+  //       query
+  //         .addSelect('COUNT(chosenProjects.id)', 'popularity')
+  //         .orderBy('popularity', sortOrder);
+  //     } else if (sortBy === 'recent') {
+  //       query.orderBy('project.createdAt', sortOrder);
+  //     }
+
+  //     // Group by project ID to support aggregation
+  //     query.groupBy('project.id, tutor.id');
+
+  //     // Execute the query
+  //     const projects = await query.getMany();
+
+  //     return {
+  //       status: 201,
+  //       message: 'Projects fetched successfully',
+  //       response: {
+  //         projects: projects,
+  //         pagination: {
+  //           currentPage: page,
+  //           totalPages,
+  //           totalCount,
+  //           limit,
+  //         },
+  //     };
+  //   }
+  // }
+
+  async getAllProjects(filters: any): Promise<BaseResponse> {
+    const {
+      search,
+      modules,
+      tutorId,
+      sortBy,
+      sortOrder,
+      page = 1,
+      limit = 9,
+    } = filters;
+
+    // Initialize query builder
+    const query = this.projectRepository
+      .createQueryBuilder('project')
+      .leftJoin('project.chosenProjects', 'chosenProjects')
+      .leftJoin('project.tutor', 'tutor')
+      .leftJoin('tutor.user', 'user')
+      .leftJoin('project.prerequisiteModules', 'prerequisiteModules') // Explicit join for prerequisiteModules
+      .select([
+        'project.id',
+        'project.title',
+        'project.description',
+        'project.expectedDeliverable',
+        'project.tags',
+        'project.resources',
+        'project.createdAt',
+        'project.updatedAt',
+        'tutor.id AS tutor_id',
+        'MAX(user.name) AS tutorname', // Aggregated tutor name
+        'COUNT(chosenProjects.id) AS popularity', // Count of chosen projects
+      ])
+      .groupBy('project.id')
+      .addGroupBy('tutor.id')
+      .addGroupBy('user.id')
+      .addGroupBy('project.title')
+      .addGroupBy('project.description')
+      .addGroupBy('project.expectedDeliverable')
+      .addGroupBy('project.tags')
+      .addGroupBy('project.resources')
+      .addGroupBy('project.createdAt')
+      .addGroupBy('project.updatedAt')
+      .orderBy('popularity', 'DESC');
+
+    // Search by project title or tags
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('project.title ILIKE :search', {
+            search: `%${search}%`,
+          }).orWhere('project.tags && ARRAY[:...tags]', { tags: [search] });
+        }),
+      );
     }
+
+    // Filter by module
+    if (modules) {
+      query.andWhere('prerequisiteModules.id = :modules', { modules }); // Filter by single module
+    }
+
+    // Filter by tutor
+    if (tutorId) {
+      query.andWhere('tutor.id = :tutorId', { tutorId });
+    }
+
+    // Sort by popularity (number of chosenProjects) or recent (creation date)
+    if (sortBy === 'popularity') {
+      query
+        .addSelect('COUNT(chosenProjects.id)', 'popularity')
+        .orderBy('popularity', sortOrder);
+    } else if (sortBy === 'recent') {
+      query.orderBy('project.createdAt', sortOrder);
+    }
+
+    // Apply pagination (skip and take)
+    query.skip((page - 1) * limit); // Calculate skip
+    // query.take(limit); // Limit the number of results per page
+    query.limit(limit);
+
+    // const [sql, parameters] = query.getQueryAndParameters();
+    // console.log('Generated SQL Query:', sql);
+    // console.log('Parameters:', parameters);
+    // Execute the query
+    const [projects, totalCount] = await query.getManyAndCount(); // This will return the total count of records
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      status: 201,
+      message: 'Projects fetched successfully',
+      response: {
+        projects,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          limit,
+        },
+      },
+    };
   }
 
   async getProjectById(id: number): Promise<BaseResponse> {
     try {
       const project = await this.projectRepository.findOne({
         where: { id: id },
+        relations: {
+          tutor: true,
+        },
       });
       if (project) {
         return {
