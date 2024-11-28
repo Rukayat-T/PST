@@ -25,6 +25,6 @@ export class ModulesEntity {
   @Column()
   description: string;
 
-  @ManyToOne(() => ProjectEntity, (project) => project.prerequisiteModules)
-  project: ProjectEntity;
+  @ManyToMany(() => ProjectEntity, (project) => project.prerequisiteModules)
+  projects: ProjectEntity[];
 }

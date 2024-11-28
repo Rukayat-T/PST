@@ -232,7 +232,7 @@ export class ProjectService {
       .leftJoin('project.chosenProjects', 'chosenProjects')
       .leftJoin('project.tutor', 'tutor')
       .leftJoin('tutor.user', 'user')
-      .leftJoin('project.prerequisiteModules', 'prerequisiteModules') // Explicit join for prerequisiteModules
+      .leftJoin('project.prerequisiteModules', 'module')
       .select([
         'project.id',
         'project.title',
@@ -243,8 +243,8 @@ export class ProjectService {
         'project.createdAt',
         'project.updatedAt',
         'tutor.id AS tutor_id',
-        // 'MAX(user.name) AS tutorname', // Aggregated tutor name
-        // 'COUNT(chosenProjects.id) AS popularity', // Count of chosen projects
+        'ARRAY_AGG(DISTINCT module.id) AS module_ids',
+        'ARRAY_AGG(DISTINCT module.name) AS module_names',
       ])
       .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
       .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
@@ -274,7 +274,7 @@ export class ProjectService {
 
     // Filter by module
     if (modules) {
-      query.andWhere('prerequisiteModules.id = :modules', { modules }); // Filter by single module
+      query.andWhere('module.id = :modules', { modules }); // Filter by a single module
     }
 
     // Filter by tutor
@@ -291,22 +291,20 @@ export class ProjectService {
       query.orderBy('project.createdAt', sortOrder);
     }
 
-    // Apply pagination (skip and take)
-    // query.skip((page - 1) * limit); // Calculate skip
-    // // query.take(limit); // Limit the number of results per page
-    // query.limit(limit);
-
     const offset = (page - 1) * limit;
-    query.skip(offset).take(limit);
+    // query.skip(offset).take(limit);
 
-    // const [sql, parameters] = query.getQueryAndParameters();
+    query.offset(offset).limit(limit);
+    console.log(query.getSql());
+
+    const [sql, parameters] = query.getQueryAndParameters();
     // console.log('Generated SQL Query:', sql);
     // console.log('Parameters:', parameters);
 
     // Execute the query
     const projects = await query.getRawMany();
 
-    const totalCount = projects.length;
+    const totalCount = await this.projectRepository.count(); // Get the total count of projects
     const totalPages = Math.ceil(totalCount / limit);
     return {
       status: 201,
