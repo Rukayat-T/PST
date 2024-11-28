@@ -329,4 +329,22 @@ export class AuthService {
       };
     }
   }
+
+  async getAlltutors(): Promise<BaseResponse> {
+    try {
+      const tutors = await this.tutorProfileRepository.find();
+      return {
+        status: 200,
+        message: 'Tutors found',
+        response: tutors,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: 500,
+        message: 'bad request',
+        response: error.message,
+      };
+    }
+  }
 }

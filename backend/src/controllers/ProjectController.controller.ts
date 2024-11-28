@@ -219,4 +219,14 @@ export class ProjectController {
   async deleteProject(@Param('id') id: number): Promise<BaseResponse> {
     return await this.projectService.deleteProject(id);
   }
+
+  @Get('getAllTutorsWithProjects')
+  async getallTutorsWithProjects(): Promise<BaseResponse> {
+    return await this.projectService.getAllTutorsWithProjects();
+  }
+
+  @Get('getAllModules')
+  async getAllModules(): Promise<BaseResponse> {
+    return await this.projectService.getAllModules();
+  }
 }
