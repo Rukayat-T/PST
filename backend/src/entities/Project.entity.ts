@@ -33,7 +33,11 @@ export class ProjectEntity {
   @OneToMany(() => ChosenProject, (chosenProject) => chosenProject.project)
   chosenProjects: ChosenProject[];
 
-  @OneToMany(() => ModulesEntity, (module) => module.project)
+  // @OneToMany(() => ModulesEntity, (module) => module.project)
+  // prerequisiteModules: ModulesEntity[];
+
+  @ManyToMany(() => ModulesEntity)
+  @JoinTable() // This tells TypeORM to create a linking table between projects and modules
   prerequisiteModules: ModulesEntity[];
 
   // Many students can choose the same project and a student can choose many projects
