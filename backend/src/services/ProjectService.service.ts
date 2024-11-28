@@ -88,133 +88,6 @@ export class ProjectService {
     }
   }
 
-  // async getAllProjects(): Promise<BaseResponse> {
-  //   try {
-  //     const projects = await this.projectRepository.find({
-  //       relations: {
-  //         tutor: true,
-  //         chosenProjects: true,
-  //         prerequisiteModules: true,
-  //       },
-  //     });
-  //     if (projects) {
-  //       return {
-  //         status: 201,
-  //         message: 'successful',
-  //         response: projects,
-  //       };
-  //     }
-  //     return {
-  //       status: 404,
-  //       message: 'There are no projects',
-  //     };
-  //   } catch (error) {
-  //     return {
-  //       status: 400,
-  //       message: 'Bad Request',
-  //       response: error,
-  //     };
-  //   }
-  // }
-
-  //   async getAllProjects(filters: any): Promise<BaseResponse> {
-  //     const { search, modules, tutorId, sortBy, sortOrder } = filters;
-
-  //     // Initialize query builder
-  //     const query = this.projectRepository
-  //       .createQueryBuilder('project')
-  //       .leftJoin('project.chosenProjects', 'chosenProjects')
-  //       .leftJoin('project.prerequisiteModules', 'prerequisiteModules')
-  //       .leftJoin('project.tutor', 'tutor')
-  //       .leftJoin('tutor.user', 'user')
-  //       .select([
-  //         'project.id',
-  //         'project.title',
-  //         'project.description',
-  //         'project.expectedDeliverable',
-  //         'project.tags',
-  //         'project.resources',
-  //         'project.createdAt',
-  //         'project.updatedAt',
-  //         'tutor.id',
-  //         'MAX(user.name) AS tutorname',
-  //         'COUNT(chosenProjects.id) AS popularity',
-  //       ])
-  //       .groupBy('chosenProjects.id')
-  //       .addGroupBy('project.id')
-  //       .addGroupBy('tutor.id')
-  //       .addGroupBy('user.id') // Group by user fields
-  //       .addGroupBy('project.title')
-  //       .addGroupBy('project.description')
-  //       .addGroupBy('project.expectedDeliverable')
-  //       .addGroupBy('project.resources')
-  //       .addGroupBy('project.createdAt')
-  //       .addGroupBy('project.updatedAt')
-  //       .orderBy('popularity', 'DESC');
-
-  //     const [sql, parameters] = query.getQueryAndParameters();
-  //     console.log('Generated SQL Query:', sql);
-  //     console.log('Parameters:', parameters);
-
-  //     // Search by project title
-  //     // if (search) {
-  //     //   query.andWhere('project.title ILIKE :search', { search: `%${search}%` });
-  //     // }
-
-  //     if (search) {
-  //       query.andWhere(
-  //         new Brackets((qb) => {
-  //           qb.where('project.title ILIKE :search', {
-  //             search: `%${search}%`,
-  //           }).orWhere('project.tags && ARRAY[:...tags]', { tags: [search] });
-  //         }),
-  //       );
-  //     }
-
-  //     // Filter by tags
-  //     // if (tags && tags.length) {
-  //     //   query.andWhere('project.tags && ARRAY[:...tags]', { tags });
-  //     // }
-
-  //     if (modules) {
-  //       query.andWhere('prerequisiteModules.id = :modules', { modules });
-  //     }
-
-  //     // Filter by tutor
-  //     if (tutorId) {
-  //       query.andWhere('tutor.id = :tutorId', { tutorId });
-  //     }
-
-  //     // Sort by popularity (number of chosenProjects) or recent (creation date)
-  //     if (sortBy === 'popularity') {
-  //       query
-  //         .addSelect('COUNT(chosenProjects.id)', 'popularity')
-  //         .orderBy('popularity', sortOrder);
-  //     } else if (sortBy === 'recent') {
-  //       query.orderBy('project.createdAt', sortOrder);
-  //     }
-
-  //     // Group by project ID to support aggregation
-  //     query.groupBy('project.id, tutor.id');
-
-  //     // Execute the query
-  //     const projects = await query.getMany();
-
-  //     return {
-  //       status: 201,
-  //       message: 'Projects fetched successfully',
-  //       response: {
-  //         projects: projects,
-  //         pagination: {
-  //           currentPage: page,
-  //           totalPages,
-  //           totalCount,
-  //           limit,
-  //         },
-  //     };
-  //   }
-  // }
-
   async getAllProjects(filters: any): Promise<BaseResponse> {
     const {
       search,
@@ -295,7 +168,7 @@ export class ProjectService {
     // query.skip(offset).take(limit);
 
     query.offset(offset).limit(limit);
-    console.log(query.getSql());
+    // console.log(query.getSql());
 
     const [sql, parameters] = query.getQueryAndParameters();
     // console.log('Generated SQL Query:', sql);
@@ -542,5 +415,47 @@ export class ProjectService {
     }
   }
 
-  // ask abinaya about file upload for projects
+  async getAllTutorsWithProjects(): Promise<BaseResponse> {
+    try {
+      const projects = await this.projectRepository.find({
+        relations: ['tutor', 'tutor.user'],
+      });
+      // projects.map((project) => project.tutor.user.name);
+
+      const uniqueTutorNames = Array.from(
+        new Set(projects.map((project) => project.tutor.user.name)),
+      );
+
+      // const tutors
+      return {
+        status: 201,
+        message: 'successful',
+        response: uniqueTutorNames,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
+  async getAllModules(): Promise<BaseResponse> {
+    try {
+      const modules = await this.modulesRepository.find();
+      return {
+        status: 201,
+        message: 'successful',
+        response: modules,
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
 }

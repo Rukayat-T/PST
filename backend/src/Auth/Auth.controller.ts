@@ -66,4 +66,9 @@ export class AuthController {
   ): Promise<BaseResponse> {
     return await this.authService.getTutorProfileByUserId(userId);
   }
+
+  @Get('getAllTutors')
+  async getAllTutors(): Promise<BaseResponse> {
+    return await this.authService.getAlltutors();
+  }
 }
