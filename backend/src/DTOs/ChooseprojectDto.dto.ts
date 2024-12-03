@@ -24,5 +24,5 @@ export class ChooseProjectDto {
     description: 'project rank',
     required: true,
   })
-  rank: number;
+  rank?: number;
 }

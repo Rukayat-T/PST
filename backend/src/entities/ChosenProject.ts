@@ -27,7 +27,6 @@ export class ChosenProject {
   @ManyToOne(
     () => StudentProfile,
     (studentProfile) => studentProfile.chosenProjects,
-    { onDelete: 'CASCADE' },
   )
   student: StudentProfile;
 

@@ -205,6 +205,14 @@ export class ProjectController {
     return await this.projectService.chooseProject(studentId, dto);
   }
 
+  @Put('removeProjectChoice/:studentId/:projectId')
+  async removeProjectChoice(
+    @Param('studentId') studentId: number,
+    @Param('projectId') projectId: number,
+  ): Promise<BaseResponse> {
+    return await this.projectService.removeProjectChoice(studentId, projectId);
+  }
+
   // edit project
   @Put('updateProject/:id')
   async editProject(

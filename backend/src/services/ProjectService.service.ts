@@ -458,4 +458,57 @@ export class ProjectService {
       };
     }
   }
+
+  async removeProjectChoice(
+    studentId: number,
+    projectId: number,
+  ): Promise<BaseResponse> {
+    try {
+      const student = await this.studentProfileRepository.findOne({
+        where: { id: studentId },
+      });
+      if (!student) {
+        return {
+          status: 404,
+          message: 'student does not exist',
+        };
+      }
+
+      const project = await this.projectRepository.findOne({
+        where: { id: projectId },
+      });
+      if (!project) {
+        return {
+          status: 404,
+          message: 'project does not exist',
+        };
+      }
+
+      const chosenProject = await this.chosenProjectRepository.findOne({
+        where: {
+          project: { id: projectId },
+          student: { id: studentId },
+        },
+      });
+      if (!chosenProject) {
+        return {
+          status: 400,
+          message: 'student has not chosen this project',
+        };
+      }
+
+      await this.chosenProjectRepository.delete(chosenProject);
+
+      return {
+        status: 201,
+        message: 'choice successfully removed',
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
 }
