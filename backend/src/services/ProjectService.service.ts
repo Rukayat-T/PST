@@ -259,7 +259,7 @@ export class ProjectService {
   ): Promise<BaseResponse> {
     try {
       const student = await this.studentProfileRepository.findOne({
-        where: { id: dto.studentId },
+        where: { id: id },
       });
       if (!student) {
         return {
@@ -268,18 +268,33 @@ export class ProjectService {
         };
       }
 
-      let newChoice = new ChosenProject();
-      newChoice.project = await this.projectRepository.findOne({
-        where: { id: dto.projectId },
+      const chosenProjectDb = await this.chosenProjectRepository.findOne({
+        where: {
+          project: { id: dto.projectId },
+          student: { id: id },
+        },
       });
-      newChoice.student = student;
-      newChoice.rank = dto.rank;
-      const chosenProject = await this.chosenProjectRepository.save(newChoice);
-      return {
-        status: 201,
-        message: 'successful',
-        response: chosenProject,
-      };
+      if (chosenProjectDb) {
+        return {
+          status: 400,
+          message: 'student has already chosen this project',
+        };
+      } else {
+        let newChoice = new ChosenProject();
+        newChoice.project = await this.projectRepository.findOne({
+          where: { id: dto.projectId },
+        });
+        newChoice.student = student;
+        newChoice.rank = dto.rank;
+        const chosenProject = await this.chosenProjectRepository.save(
+          newChoice,
+        );
+        return {
+          status: 201,
+          message: 'successful',
+          response: chosenProject,
+        };
+      }
     } catch (error) {
       return {
         status: 400,
@@ -461,7 +476,7 @@ export class ProjectService {
 
   async removeProjectChoice(
     studentId: number,
-    projectId: number,
+    choiceId: number,
   ): Promise<BaseResponse> {
     try {
       const student = await this.studentProfileRepository.findOne({
@@ -474,19 +489,9 @@ export class ProjectService {
         };
       }
 
-      const project = await this.projectRepository.findOne({
-        where: { id: projectId },
-      });
-      if (!project) {
-        return {
-          status: 404,
-          message: 'project does not exist',
-        };
-      }
-
       const chosenProject = await this.chosenProjectRepository.findOne({
         where: {
-          project: { id: projectId },
+          id: choiceId,
           student: { id: studentId },
         },
       });
