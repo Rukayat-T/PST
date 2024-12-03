@@ -19,7 +19,6 @@ export class ChosenProject {
   id: number;
 
   @ManyToOne(() => ProjectEntity, (project) => project.chosenProjects, {
-    onDelete: 'CASCADE',
     eager: true,
   })
   project: ProjectEntity;

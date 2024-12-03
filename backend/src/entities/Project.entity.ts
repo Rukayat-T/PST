@@ -19,7 +19,7 @@ export class ProjectEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => TutorProfile, (tutor) => tutor.projects)
+  @ManyToOne(() => TutorProfile, (tutor) => tutor.projects, { eager: true })
   tutor: TutorProfile;
 
   @OneToMany(() => StudentProfile, (student) => student.assignedProject, {
