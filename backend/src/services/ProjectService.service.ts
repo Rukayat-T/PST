@@ -177,7 +177,7 @@ export class ProjectService {
     // Execute the query
     const projects = await query.getRawMany();
 
-    const totalCount = await this.projectRepository.count(); // Get the total count of projects
+    const totalCount = projects.length; // Get the total count of projects
     const totalPages = Math.ceil(totalCount / limit);
     return {
       status: 201,
