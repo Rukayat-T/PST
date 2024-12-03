@@ -36,7 +36,7 @@ export class ProjectEntity {
   // @OneToMany(() => ModulesEntity, (module) => module.project)
   // prerequisiteModules: ModulesEntity[];
 
-  @ManyToMany(() => ModulesEntity)
+  @ManyToMany(() => ModulesEntity, { eager: true })
   @JoinTable() // This tells TypeORM to create a linking table between projects and modules
   prerequisiteModules: ModulesEntity[];
 
