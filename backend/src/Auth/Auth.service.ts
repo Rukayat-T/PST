@@ -77,7 +77,7 @@ export class AuthService {
               newStudent,
             );
             return {
-              status: 200,
+              status: 201,
               message: 'new student created',
               response: student,
             };
@@ -129,7 +129,7 @@ export class AuthService {
             newTutor.specializations = dto.specializations;
             const tutor = await this.tutorProfileRepository.save(newTutor);
             return {
-              status: 200,
+              status: 201,
               message: 'new tutor created',
               response: tutor,
             };
@@ -334,7 +334,7 @@ export class AuthService {
     try {
       const tutors = await this.tutorProfileRepository.find();
       return {
-        status: 200,
+        status: 201,
         message: 'Tutors found',
         response: tutors,
       };

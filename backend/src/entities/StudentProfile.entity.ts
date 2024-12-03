@@ -43,6 +43,7 @@ export class StudentProfile {
 
   @OneToMany(() => ChosenProject, (chosenProject) => chosenProject.student, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   chosenProjects: ChosenProject[];
 
