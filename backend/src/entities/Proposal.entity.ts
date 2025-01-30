@@ -12,6 +12,7 @@ import {
 import { TutorProfile } from './TutorProfile.entity';
 import { StudentProfile } from './StudentProfile.entity';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
+import { ModulesEntity } from './Modules';
 
 @Entity('proposal_entity')
 export class ProposalEntity {
@@ -52,4 +53,9 @@ export class ProposalEntity {
     onDelete: 'CASCADE',
   })
   tutor: TutorProfile;
+
+  @OneToMany(() => ModulesEntity, (module) => module.proposal, {
+    cascade: true,
+  })
+  modules: ModulesEntity[];
 }

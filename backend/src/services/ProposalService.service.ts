@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/Auth/Auth.service';
 import { CreateProposalDto } from 'src/DTOs/CreateProposalDto.dto';
+import { ModulesEntity } from 'src/entities/Modules';
 import { ProposalEntity } from 'src/entities/Proposal.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 @Injectable()
 export class ProposalService {
@@ -18,6 +19,8 @@ export class ProposalService {
     private readonly tutorProfileRepository: Repository<TutorProfile>,
     @InjectRepository(ProposalEntity)
     private readonly proposalRepository: Repository<ProposalEntity>,
+    @InjectRepository(ModulesEntity)
+    private readonly modulesRepository: Repository<ModulesEntity>,
 
     private readonly authService: AuthService,
   ) {}
@@ -39,6 +42,12 @@ export class ProposalService {
       proposal.tutor = await this.tutorProfileRepository.findOne({
         where: { id: dto.proposed_to },
       });
+
+      if (dto.moduleIds && dto.moduleIds.length > 0) {
+        proposal.modules = await this.modulesRepository.findBy({
+          id: In(dto.moduleIds),
+        });
+      }
 
       await this.proposalRepository.save(proposal);
 

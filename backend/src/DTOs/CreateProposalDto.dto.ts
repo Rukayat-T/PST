@@ -63,4 +63,14 @@ export class CreateProposalDto {
     required: true,
   })
   proposed_to: number;
+
+  @IsArray()
+  @ApiProperty({
+    description: 'Module IDs related to the project',
+    example: [1, 2],
+    required: false,
+    isArray: true,
+    type: Number,
+  })
+  moduleIds: number[];
 }
