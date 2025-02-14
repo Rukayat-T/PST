@@ -227,12 +227,16 @@ export class ProjectService {
   async getProjectByTutor(id: number): Promise<BaseResponse> {
     try {
       const projects = await this.projectRepository.find({
-        where: {
-          tutor: await this.tutorProfileRepository.findOne({
-            where: { id: id },
-          }),
-        },
+        where: { tutor: { id } }, // Match tutor by ID
+        relations: ['tutor'], // Ensure the tutor relationship is loaded
       });
+      // const projects = await this.projectRepository.find({
+      //   where: {
+      //     tutor: await this.tutorProfileRepository.findOne({
+      //       where: { id: id },
+      //     }),
+      //   },
+      // });
       if (!projects) {
         return {
           status: 404,
