@@ -31,4 +31,7 @@ export class ChosenProject {
 
   @Column()
   rank: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

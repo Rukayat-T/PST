@@ -13,6 +13,7 @@ import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
+import { addDays } from 'date-fns';
 
 @Injectable()
 export class TutorDashboardService {
@@ -129,10 +130,45 @@ return {
   // get popular projects
   async getPopularProjects(id: number): Promise<BaseResponse> {
     try {
+      const oneWeekAgo = addDays(new Date(), -7); // Date 7 days ago
+
+      const projects = await this.projectRepository.find({
+        where: {
+          //   status: ProjectStatus.ACTIVE,
+          tutor: { id },
+        },
+        relations: ['chosenProjects'],
+      });
+
+      const projectsWithApplications = projects.map((project) => {
+        const allApplications = project.chosenProjects.length;
+        const applicationsLastWeek = project.chosenProjects.filter(
+          (chosenProject) => new Date(chosenProject.createdAt) > oneWeekAgo,
+        ).length;
+
+        return {
+          projectId: project.id,
+          projectTitle: project.title,
+          popularity: allApplications,
+          applicationsLastWeek,
+        };
+      });
+
+      const top5Projects = projectsWithApplications
+        .sort((a, b) => b.popularity - a.popularity) // Sort by popularity (descending)
+        .slice(0, 5); // Get top 5 projects
+
+      if (top5Projects.length === 0) {
+        return {
+          status: 404,
+          message: 'No popular projects found for this tutor.',
+        };
+      }
+
       return {
         status: 201,
         message: 'successful',
-        response: '',
+        response: top5Projects,
       };
     } catch (error) {
       return {
