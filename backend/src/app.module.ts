@@ -17,6 +17,8 @@ import { ProposalController } from './controllers/ProposalController.controller'
 import { ProposalService } from './services/ProposalService.service';
 import { AuthService } from './Auth/Auth.service';
 import { MailModule } from './Mail/Mail.module';
+import { TutorDashboardController } from './controllers/TutorDashboardController.controller';
+import { TutorDashboardService } from './services/TutorDashboardService.service';
 
 @Module({
   imports: [
@@ -44,7 +46,12 @@ import { MailModule } from './Mail/Mail.module';
       ProposalEntity,
     ]),
   ],
-  controllers: [ProjectController, ProposalController, AppController],
-  providers: [ProjectService, ProposalService],
+  controllers: [
+    ProjectController,
+    ProposalController,
+    AppController,
+    TutorDashboardController,
+  ],
+  providers: [ProjectService, ProposalService, TutorDashboardService],
 })
 export class AppModule {}

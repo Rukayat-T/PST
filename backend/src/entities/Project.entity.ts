@@ -13,6 +13,7 @@ import { TutorProfile } from './TutorProfile.entity';
 import { StudentProfile } from './StudentProfile.entity';
 import { ChosenProject } from './ChosenProject';
 import { ModulesEntity } from './Modules';
+import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 
 @Entity('project_entity')
 export class ProjectEntity {
@@ -56,6 +57,13 @@ export class ProjectEntity {
 
   @Column('text', { array: true, nullable: true })
   resources: string[];
+
+  @Column({
+    type: 'enum',
+    enum: ProjectStatus,
+    nullable: true,
+  })
+  status: ProjectStatus;
 
   @CreateDateColumn()
   createdAt: Date;
