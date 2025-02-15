@@ -170,13 +170,13 @@ export class ProjectService {
     query.offset(offset).limit(limit);
     // console.log(query.getSql());
 
-    const [sql, parameters] = query.getQueryAndParameters();
+    // const [sql, parameters] = query.getQueryAndParameters();
     // console.log('Generated SQL Query:', sql);
     // console.log('Parameters:', parameters);
 
     // Execute the query
     const projects = await query.getRawMany();
-    console.log(projects);
+    // console.log(projects);
 
     const totalCount = projects.length; // Get the total count of projects
     const totalPages = Math.ceil(totalCount / limit);
@@ -223,8 +223,8 @@ export class ProjectService {
     }
   }
 
-  // get projects by tutor id
-  async getProjectByTutor(id: number): Promise<BaseResponse> {
+  // get projects by tutor id without filter
+  async getProjectByTutorNoFilter(id: number): Promise<BaseResponse> {
     try {
       const projects = await this.projectRepository.find({
         where: { tutor: { id } }, // Match tutor by ID
@@ -247,6 +247,101 @@ export class ProjectService {
         status: 201,
         message: 'successful',
         response: projects,
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
+  // get projects by tutor id with filter and search
+  async getProjectByTutor(id: number, filters: any): Promise<BaseResponse> {
+    const { search, sortBy, sortOrder, page = 1, limit = 15 } = filters;
+    try {
+      const query = this.projectRepository
+        .createQueryBuilder('project')
+        .leftJoin('project.chosenProjects', 'chosenProjects')
+        .leftJoin('project.tutor', 'tutor')
+        .leftJoin('tutor.user', 'user')
+        .leftJoin('project.prerequisiteModules', 'module')
+        .select([
+          'project.id',
+          'project.title',
+          'project.description',
+          'project.expectedDeliverable',
+          'project.tags',
+          'project.resources',
+          'project.createdAt',
+          'project.updatedAt',
+          'tutor.id AS tutor_id',
+          'ARRAY_AGG(DISTINCT module.id) AS module_ids',
+          'ARRAY_AGG(DISTINCT module.name) AS module_names',
+        ])
+        .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
+        .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
+        .where('tutor.id = :id', { id }) // Filter by tutor ID
+        .groupBy('project.id')
+        .addGroupBy('tutor.id')
+        .addGroupBy('user.id')
+        .addGroupBy('project.title')
+        .addGroupBy('project.description')
+        .addGroupBy('project.expectedDeliverable')
+        .addGroupBy('project.tags')
+        .addGroupBy('project.resources')
+        .addGroupBy('project.createdAt')
+        .addGroupBy('project.updatedAt');
+
+      // Search by project title or tags
+      if (search) {
+        query.andWhere(
+          new Brackets((qb) => {
+            qb.where('project.title ILIKE :search', {
+              search: `%${search}%`,
+            }).orWhere('project.tags && ARRAY[:...tags]', { tags: [search] });
+          }),
+        );
+      }
+
+      // Sorting logic
+      if (sortBy === 'popularity') {
+        query
+          .addSelect('COUNT(chosenProjects.id)', 'popularity')
+          .orderBy('popularity', sortOrder);
+      } else if (sortBy === 'recent') {
+        query.orderBy('project.createdAt', sortOrder);
+      } else if (sortBy === 'title') {
+        query.orderBy('project.title', sortOrder);
+      } else {
+        // Default sorting by project ID
+        query.orderBy('project.id', 'ASC');
+      }
+
+      // Pagination
+      const offset = (page - 1) * limit;
+      query.offset(offset).limit(limit);
+
+      // Execute the query
+      const projects = await query.getRawMany();
+      // console.log(projects);
+
+      const totalCount = projects.length; // Get the total count of projects
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        status: 201,
+        message: 'Projects fetched successfully',
+        response: {
+          projects,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            limit,
+          },
+        },
       };
     } catch (error) {
       return {

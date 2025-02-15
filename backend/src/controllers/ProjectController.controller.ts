@@ -171,10 +171,54 @@ export class ProjectController {
   // get projects by tutor id
   // @UseGuards(JwtGuard)
   @Get('getProjectsCreatedByTutor/:tutorId')
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search keyword for project title or description',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description:
+      'Sort projects by a specific attribute (e.g., popularity, recent, title)',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    type: String,
+    enum: ['ASC', 'DESC'],
+    description: 'Sort order (ascending or descending)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of projects per page (limit for pagination)',
+  })
   async getProjectsByTutor(
     @Param('tutorId') tutorId: number,
+    @Query('search') search: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortOrder') sortOrder: string,
+    @Query('page') page: number = 1, // Default to page 1 if not provided
+    @Query('limit') limit: number = 15, // Default to 15 results per page if not provided
   ): Promise<BaseResponse> {
-    return await this.projectService.getProjectByTutor(tutorId);
+    const filters = {
+      search,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+    };
+    return await this.projectService.getProjectByTutor(tutorId, filters);
   }
 
   // get projects chosen by student id
