@@ -9,6 +9,7 @@ import { ProjectEntity } from 'src/entities/Project.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
+import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
 
 @Injectable()
@@ -99,6 +100,8 @@ export class ProjectService {
       limit = 9,
     } = filters;
 
+    const status = ProjectStatus.ACTIVE;
+
     // Initialize query builder
     const query = this.projectRepository
       .createQueryBuilder('project')
@@ -115,12 +118,14 @@ export class ProjectService {
         'project.resources',
         'project.createdAt',
         'project.updatedAt',
+        'project.status',
         'tutor.id AS tutor_id',
         'ARRAY_AGG(DISTINCT module.id) AS module_ids',
         'ARRAY_AGG(DISTINCT module.name) AS module_names',
       ])
       .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
       .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
+      // .where('tutor.status = :status', { status })
       .groupBy('project.id')
       .addGroupBy('tutor.id')
       .addGroupBy('user.id')
@@ -178,8 +183,11 @@ export class ProjectService {
     const projects = await query.getRawMany();
     // console.log(projects);
 
-    const totalCount = projects.length; // Get the total count of projects
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalCount = await query.getCount();
+
+    // const totalCount = projects.length; // Get the total count of projects
+    const totalPages = Math.ceil(Number(totalCount) / limit);
+
     return {
       status: 201,
       message: 'Projects fetched successfully',
@@ -319,6 +327,9 @@ export class ProjectService {
         query.orderBy('project.id', 'ASC');
       }
 
+      // const projectsCount = (await query.getRawMany()).length;
+      // console.log(projectsCount, '---------projects count');
+
       // Pagination
       const offset = (page - 1) * limit;
       query.offset(offset).limit(limit);
@@ -327,8 +338,10 @@ export class ProjectService {
       const projects = await query.getRawMany();
       // console.log(projects);
 
-      const totalCount = projects.length; // Get the total count of projects
-      const totalPages = Math.ceil(totalCount / limit);
+      const totalCount = await query.getCount();
+
+      // const totalCount = projects.length; // Get the total count of projects
+      const totalPages = Math.ceil(Number(totalCount) / limit);
 
       return {
         status: 201,
