@@ -24,7 +24,14 @@ export class TutorDashboardController {
   constructor(private readonly tutorDashboardService: TutorDashboardService) {}
 
   @Get('getMetrics/:tutorId')
-  async getmetrics(@Param('tutorId') tutorId: number): Promise<BaseResponse> {
+  async getMetrics(@Param('tutorId') tutorId: number): Promise<BaseResponse> {
     return await this.tutorDashboardService.getMetrics(tutorId);
+  }
+
+  @Get('getPopularProjects/:tutorId')
+  async getPopularProjects(
+    @Param('tutorId') tutorId: number,
+  ): Promise<BaseResponse> {
+    return await this.tutorDashboardService.getPopularProjects(tutorId);
   }
 }

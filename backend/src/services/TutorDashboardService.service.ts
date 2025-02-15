@@ -127,4 +127,19 @@ return {
   //get recent activity
 
   // get popular projects
+  async getPopularProjects(id: number): Promise<BaseResponse> {
+    try {
+      return {
+        status: 201,
+        message: 'successful',
+        response: '',
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
 }

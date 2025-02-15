@@ -183,8 +183,11 @@ export class ProjectService {
     const projects = await query.getRawMany();
     // console.log(projects);
 
-    const totalCount = projects.length; // Get the total count of projects
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalCount = await query.getCount();
+
+    // const totalCount = projects.length; // Get the total count of projects
+    const totalPages = Math.ceil(Number(totalCount) / limit);
+
     return {
       status: 201,
       message: 'Projects fetched successfully',
@@ -324,6 +327,9 @@ export class ProjectService {
         query.orderBy('project.id', 'ASC');
       }
 
+      // const projectsCount = (await query.getRawMany()).length;
+      // console.log(projectsCount, '---------projects count');
+
       // Pagination
       const offset = (page - 1) * limit;
       query.offset(offset).limit(limit);
@@ -332,8 +338,10 @@ export class ProjectService {
       const projects = await query.getRawMany();
       // console.log(projects);
 
-      const totalCount = projects.length; // Get the total count of projects
-      const totalPages = Math.ceil(totalCount / limit);
+      const totalCount = await query.getCount();
+
+      // const totalCount = projects.length; // Get the total count of projects
+      const totalPages = Math.ceil(Number(totalCount) / limit);
 
       return {
         status: 201,
