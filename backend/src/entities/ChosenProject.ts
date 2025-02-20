@@ -22,7 +22,6 @@ export class ChosenProject {
   @ManyToOne(() => ProjectEntity, (project) => project.chosenProjects, {
     // eager: true,
   })
-  @Exclude()
   project: ProjectEntity;
 
   @ManyToOne(

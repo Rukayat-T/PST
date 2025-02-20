@@ -423,6 +423,11 @@ export class ProjectService {
     try {
       const student = await this.studentProfileRepository.findOne({
         where: { id: id },
+        relations: [
+          'chosenProjects',
+          'chosenProjects.project',
+          // 'chosenProjects.student ',
+        ],
       });
       if (!student) {
         return {
