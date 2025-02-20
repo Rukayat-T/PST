@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -14,6 +15,7 @@ import { UserEntity } from './UserEntity.entity';
 import { ProjectEntity } from './Project.entity';
 import { ChosenProject } from './ChosenProject';
 import { ProposalEntity } from './Proposal.entity';
+import { ModulesEntity } from './Modules';
 
 @Entity('student_profile')
 export class StudentProfile {
@@ -22,9 +24,6 @@ export class StudentProfile {
 
   @Column({ nullable: true })
   project_choices: string;
-
-  @Column()
-  modules: string;
 
   @Column()
   yearOfStudy: number;
@@ -54,4 +53,17 @@ export class StudentProfile {
 
   @OneToMany(() => ProposalEntity, (proposal) => proposal.created_by)
   proposals: ProposalEntity[];
+
+  @Column({ nullable: true })
+  department: String;
+
+  @Column({ nullable: true })
+  currentAverage: number;
+
+  @Column('text', { array: true, nullable: true })
+  interests: string[]; // array cause can have multiple
+
+  @ManyToMany(() => ModulesEntity, { eager: true, nullable: true })
+  @JoinTable() // This tells TypeORM to create a linking table between projects and modules
+  previousModules: ModulesEntity[];
 }

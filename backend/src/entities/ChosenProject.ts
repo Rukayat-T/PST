@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { TutorProfile } from './TutorProfile.entity';
 import { ProjectEntity } from './Project.entity';
+import { Exclude } from '@nestjs/class-transformer';
 import { StudentProfile } from './StudentProfile.entity';
 
 @Entity('chosen_project_entity')
@@ -19,8 +20,9 @@ export class ChosenProject {
   id: number;
 
   @ManyToOne(() => ProjectEntity, (project) => project.chosenProjects, {
-    eager: true,
+    // eager: true,
   })
+  @Exclude()
   project: ProjectEntity;
 
   @ManyToOne(

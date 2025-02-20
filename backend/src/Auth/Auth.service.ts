@@ -12,6 +12,7 @@ import { StudentProfile } from '../entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { LoginDto } from 'src/DTOs/LoginDto.dto';
 import { response } from 'express';
+import { ModulesEntity } from 'src/entities/Modules';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,8 @@ export class AuthService {
     @InjectRepository(TutorProfile)
     private readonly tutorProfileRepository: Repository<TutorProfile>,
     private jwtService: JwtService,
+    @InjectRepository(ModulesEntity)
+    private readonly modulesRepository: Repository<ModulesEntity>,
   ) {}
 
   async getAll(): Promise<any> {
@@ -68,10 +71,21 @@ export class AuthService {
           user.password = hashed;
           const newUser = await this.userRepository.save(user);
 
+          let previousModules = [];
+          for (let i = 0; i < dto.previousModules.length; i++) {
+            let module = await this.modulesRepository.findOne({
+              where: { id: dto.previousModules[i] },
+            });
+            previousModules.push(module);
+          }
+
           if (user.role == 'student') {
             let newStudent = new StudentProfile();
             newStudent.user = newUser;
-            newStudent.modules = dto.modules;
+            newStudent.previousModules = previousModules;
+            newStudent.department = dto.department;
+            newStudent.currentAverage = dto.currentAverage;
+            newStudent.interests = dto.interests;
             newStudent.yearOfStudy = dto.yearOfStudy;
             const student = await this.studentProfileRepository.save(
               newStudent,

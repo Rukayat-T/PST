@@ -33,4 +33,7 @@ export class ModulesEntity {
     onDelete: 'CASCADE',
   })
   proposal: ProposalEntity;
+
+  @ManyToMany(() => StudentProfile, (profile) => profile.previousModules)
+  students: StudentProfile[];
 }

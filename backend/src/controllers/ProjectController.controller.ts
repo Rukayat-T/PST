@@ -281,4 +281,11 @@ export class ProjectController {
   async getAllModules(): Promise<BaseResponse> {
     return await this.projectService.getAllModules();
   }
+
+  @Get('getStudentsAppsForProject/:projectId')
+  async getStudentsAppsForProject(
+    @Param('projectId') projectId: number,
+  ): Promise<BaseResponse> {
+    return await this.projectService.getStudentsAppsForProject(projectId);
+  }
 }

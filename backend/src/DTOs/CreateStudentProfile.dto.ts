@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 import { Role } from 'src/entities/role.enum';
 
 export class CreateStudentProfileDto {
@@ -50,10 +50,35 @@ export class CreateStudentProfileDto {
   })
   yearOfStudy: number;
 
-  @IsString()
+  @IsArray()
   @ApiProperty({
-    example: 'AI',
-    description: 'modules',
+    description: 'previous module ids',
+    example: [1, 2],
+    required: false,
+    isArray: true,
   })
-  modules: string;
+  previousModules: number[];
+
+  @ApiProperty({
+    example: 'Computer Science',
+    required: true,
+  })
+  department: String;
+
+  @ApiProperty({
+    example: '70',
+    required: true,
+  })
+  currentAverage: number;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ApiProperty({
+    description: 'Student intersts',
+    example: ['machine learning', 'data science'],
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  interests: string[];
 }

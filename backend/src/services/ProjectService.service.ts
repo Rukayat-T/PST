@@ -209,6 +209,7 @@ export class ProjectService {
         where: { id: id },
         relations: {
           tutor: true,
+          chosenByStudents: true,
         },
       });
       if (project) {
@@ -622,6 +623,46 @@ export class ProjectService {
         message: 'choice successfully removed',
       };
     } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
+  async getStudentsAppsForProject(id: number): Promise<BaseResponse> {
+    try {
+      const project = await this.projectRepository.findOne({
+        where: { id: id },
+        relations: {
+          tutor: true,
+          chosenByStudents: true,
+        },
+      });
+      if (!project) {
+        return {
+          status: 404,
+          message: 'Project not found, enter valid id',
+        };
+      }
+
+      const chosenProjects = await this.chosenProjectRepository.find({
+        where: {
+          project: { id: id },
+        },
+        relations: ['student'],
+        // select: ['student'],
+      });
+      // console.log(chosenProjects)
+
+      return {
+        status: 201,
+        message: 'successful',
+        response: chosenProjects,
+      };
+    } catch (error) {
+      console.log(error);
       return {
         status: 400,
         message: 'Bad Request',
