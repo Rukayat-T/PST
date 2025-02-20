@@ -9,6 +9,7 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 import { JwtStrategy } from 'src/guards/jwt.strategy';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
+import { ModulesEntity } from 'src/entities/Modules';
 
 @Module({
   imports: [
@@ -21,7 +22,12 @@ import { StudentProfile } from 'src/entities/StudentProfile.entity';
         signOptions: { expiresIn: '3600s' },
       }),
     }),
-    TypeOrmModule.forFeature([UserEntity, TutorProfile, StudentProfile]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      TutorProfile,
+      StudentProfile,
+      ModulesEntity,
+    ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtGuard, JwtStrategy],
