@@ -229,6 +229,7 @@ export class ProposalService {
       }
       const proposals = await this.proposalRepository.find({
         where: { tutor: { id: tutorId } },
+        relations: ["created_by"]
       });
       if (proposals.length != 0) {
         return {
