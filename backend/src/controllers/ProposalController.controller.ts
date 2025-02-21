@@ -76,7 +76,7 @@ export class ProposalController {
 
   //get all tutor's proposals
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.STUDENT)
+  // @Roles(Role.TUTOR)
   @Get('getAllTutorsProposals/:tutorId')
   async getTutorsProposals(
     @Param('tutorId') tutorId: number,
