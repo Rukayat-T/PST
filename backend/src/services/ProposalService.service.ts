@@ -195,6 +195,7 @@ export class ProposalService {
         where: { created_by: { id: studentId } },
         relations: {
           tutor: true,
+          modules: true
         },
       });
       if (proposals.length != 0) {
@@ -229,7 +230,7 @@ export class ProposalService {
       }
       const proposals = await this.proposalRepository.find({
         where: { tutor: { id: tutorId } },
-        relations: ["created_by"]
+        relations: ["created_by", "modules"]
       });
       if (proposals.length != 0) {
         return {
@@ -256,7 +257,7 @@ export class ProposalService {
     try {
       const proposal = await this.proposalRepository.findOne({
         where: { id: id },
-        relations : ["created_by"]
+        relations : ["created_by", "modules"]
       });
       if (!proposal) {
         return {
