@@ -282,6 +282,7 @@ export class ProjectService {
           'project.description',
           'project.expectedDeliverable',
           'project.tags',
+          'project.status',
           'project.resources',
           'project.createdAt',
           'project.updatedAt',
