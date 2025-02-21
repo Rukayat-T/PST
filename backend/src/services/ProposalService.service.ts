@@ -256,6 +256,7 @@ export class ProposalService {
     try {
       const proposal = await this.proposalRepository.findOne({
         where: { id: id },
+        relations : ["created_by"]
       });
       if (!proposal) {
         return {
