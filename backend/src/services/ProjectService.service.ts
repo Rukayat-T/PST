@@ -526,6 +526,7 @@ export class ProjectService {
 
       // Update fields
       if (editProjectDto.title) project.title = editProjectDto.title;
+      if(editProjectDto.status) project.status =editProjectDto.status
       if (editProjectDto.description)
         project.description = editProjectDto.description;
       if (editProjectDto.expectedDeliverable) {
