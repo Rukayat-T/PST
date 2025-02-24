@@ -54,6 +54,7 @@ export class ProjectService {
       project.description = dto.description;
       project.expectedDeliverable = dto.expectedDeliverable;
       project.tags = dto.tags;
+      project.status = dto.status
       if (dto?.resources) {
         project.resources = dto.resources;
       }
