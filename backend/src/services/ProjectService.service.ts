@@ -726,9 +726,10 @@ export class ProjectService {
       if (!tutor) throw new Error('Tutor not found');
   
       const student = studentId ? await this.studentProfileRepository.findOne({ where: { id: studentId } }) : null;
-      if (!student) throw new Error('Student not found');
+      if (studentId !== undefined && !student) throw new Error('Student not found');
   
       const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;
+      if (projectId !== undefined && !project) throw new Error('Project not found');
       const proposal = null;
   
       const activity = this.activityRepository.create({
