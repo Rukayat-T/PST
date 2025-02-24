@@ -57,7 +57,7 @@ export class ProposalService {
       }
 
       const saved = await this.proposalRepository.save(proposal);
-      this.logActivity(dto.proposed_to, ActionType.PROPOSAL_SUBMITTED, dto.created_by, 0, saved.id)
+      this.logActivity(dto.proposed_to, ActionType.PROPOSAL_SUBMITTED, dto.created_by, undefined, saved.id)
 
       return {
         status: 201,
@@ -98,7 +98,7 @@ export class ProposalService {
       proposal.status = ProposalStatus.WITHDRAWN;
       await this.proposalRepository.save(proposal);
 
-      this.logActivity(proposal.tutor.id, ActionType.PROPOSAL_REJECTED, studentId, 0, proposalId )
+      this.logActivity(proposal.tutor.id, ActionType.PROPOSAL_WITHDRAWN, studentId, undefined, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -140,7 +140,7 @@ export class ProposalService {
       proposal.status = ProposalStatus.APPROVED;
       await this.proposalRepository.save(proposal);
 
-      this.logActivity(tutorId, ActionType.PROPOSAL_ACCEPTED, proposal.created_by.id, 0, proposalId )
+      this.logActivity(tutorId, ActionType.PROPOSAL_ACCEPTED, proposal.created_by.id, undefined, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -180,7 +180,7 @@ export class ProposalService {
       proposal.status = ProposalStatus.REJECTED;
       await this.proposalRepository.save(proposal);
       const studentId = proposal.created_by.id
-      this.logActivity(tutorId, ActionType.PROPOSAL_REJECTED, studentId, 0, proposalId )
+      this.logActivity(tutorId, ActionType.PROPOSAL_REJECTED, studentId, undefined, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -296,14 +296,14 @@ export class ProposalService {
   async logActivity(
     tutorId: number,
     actionType: ActionType,
-    studentId: number,
-    projectId: number,
-    proposalId: number
+    studentId?: number,
+    projectId?: number,
+    proposalId?: number
   ): Promise<void> {
     const tutor = await this.tutorProfileRepository.findOne({ where: { id: tutorId } });
     if (!tutor) throw new Error('Tutor not found');
 
-    const student = await this.studentProfileRepository.findOne({ where: { id: studentId } });
+    const student = studentId ? await this.studentProfileRepository.findOne({ where: { id: studentId } }) : null;
     if (!student) throw new Error('Student not found');
 
     const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;

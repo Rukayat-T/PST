@@ -77,7 +77,7 @@ export class ProjectService {
       } else {
         project.tutor = tutor;
         const newProject = await this.projectRepository.save(project);
-        this.logActivity(dto.tutorId, ActionType.PROJECT_CREATED, 0, newProject.id, 0)
+        this.logActivity(ActionType.PROJECT_CREATED, dto.tutorId, undefined, newProject.id, undefined)
         return {
           status: 201,
           message: 'successful',
@@ -441,7 +441,7 @@ export class ProjectService {
     newChoice.rank = dto.rank;
     const chosenProject = await this.chosenProjectRepository.save(newChoice);
 
-        this.logActivity(chosenProject.project.tutor.id, ActionType.APPLIED_FOR_PROJECT, id, dto.projectId, 0)
+        this.logActivity( ActionType.APPLIED_FOR_PROJECT, chosenProject.project.tutor.id, id, dto.projectId)
 
         return {
           status: 201,
@@ -716,16 +716,16 @@ export class ProjectService {
   }
 
     async logActivity(
-      tutorId: number,
       actionType: ActionType,
-      studentId: number,
-      projectId: number,
-      proposalId: number
+      tutorId?: number,
+      studentId?: number,
+      projectId?: number,
+      proposalId?: number
     ): Promise<void> {
       const tutor = await this.tutorProfileRepository.findOne({ where: { id: tutorId } });
       if (!tutor) throw new Error('Tutor not found');
   
-      const student = await this.studentProfileRepository.findOne({ where: { id: studentId } });
+      const student = studentId ? await this.studentProfileRepository.findOne({ where: { id: studentId } }) : null;
       if (!student) throw new Error('Student not found');
   
       const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;
