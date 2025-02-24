@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/Auth/Auth.service';
 import { CreateProposalDto } from 'src/DTOs/CreateProposalDto.dto';
+import { ActivityEntity } from 'src/entities/Activities.entity';
 import { ModulesEntity } from 'src/entities/Modules';
+import { ProjectEntity } from 'src/entities/Project.entity';
 import { ProposalEntity } from 'src/entities/Proposal.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
+import { ActionType } from 'src/util/ActionType.enum';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
 import { Repository, In } from 'typeorm';
 
@@ -21,6 +24,10 @@ export class ProposalService {
     private readonly proposalRepository: Repository<ProposalEntity>,
     @InjectRepository(ModulesEntity)
     private readonly modulesRepository: Repository<ModulesEntity>,
+    @InjectRepository(ActivityEntity)
+    private readonly activityRepository: Repository<ActivityEntity>,
+     @InjectRepository(ProjectEntity)
+        private readonly projectRepository: Repository<ProjectEntity>,
 
     private readonly authService: AuthService,
   ) {}
@@ -49,12 +56,13 @@ export class ProposalService {
         });
       }
 
-      await this.proposalRepository.save(proposal);
+      const saved = await this.proposalRepository.save(proposal);
+      this.logActivity(dto.proposed_to, ActionType.PROPOSAL_SUBMITTED, dto.created_by, 0, saved.id)
 
       return {
         status: 201,
         message: 'successful',
-        response: proposal,
+        response: saved,
       };
     } catch (error) {
       return {
@@ -89,6 +97,8 @@ export class ProposalService {
       }
       proposal.status = ProposalStatus.WITHDRAWN;
       await this.proposalRepository.save(proposal);
+
+      this.logActivity(proposal.tutor.id, ActionType.PROPOSAL_REJECTED, studentId, 0, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -129,6 +139,8 @@ export class ProposalService {
       }
       proposal.status = ProposalStatus.APPROVED;
       await this.proposalRepository.save(proposal);
+
+      this.logActivity(tutorId, ActionType.PROPOSAL_ACCEPTED, proposal.created_by.id, 0, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -167,6 +179,8 @@ export class ProposalService {
       }
       proposal.status = ProposalStatus.REJECTED;
       await this.proposalRepository.save(proposal);
+      const studentId = proposal.created_by.id
+      this.logActivity(tutorId, ActionType.PROPOSAL_REJECTED, studentId, 0, proposalId )
       return {
         status: 201,
         message: 'successful',
@@ -277,5 +291,32 @@ export class ProposalService {
         response: error,
       };
     }
+  }
+
+  async logActivity(
+    tutorId: number,
+    actionType: ActionType,
+    studentId: number,
+    projectId: number,
+    proposalId: number
+  ): Promise<void> {
+    const tutor = await this.tutorProfileRepository.findOne({ where: { id: tutorId } });
+    if (!tutor) throw new Error('Tutor not found');
+
+    const student = await this.studentProfileRepository.findOne({ where: { id: studentId } });
+    if (!student) throw new Error('Student not found');
+
+    const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;
+    const proposal = proposalId ? await this.proposalRepository.findOne({ where: { id: proposalId } }) : null;
+
+    const activity = this.activityRepository.create({
+      tutor,
+      student,
+      project,
+      proposal,
+      actionType,
+    });
+
+    await this.activityRepository.save(activity);
   }
 }

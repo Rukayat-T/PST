@@ -19,6 +19,8 @@ import { AuthService } from './Auth/Auth.service';
 import { MailModule } from './Mail/Mail.module';
 import { TutorDashboardController } from './controllers/TutorDashboardController.controller';
 import { TutorDashboardService } from './services/TutorDashboardService.service';
+import { Action } from 'rxjs/internal/scheduler/Action';
+import { ActivityEntity } from './entities/Activities.entity';
 
 @Module({
   imports: [
@@ -44,6 +46,7 @@ import { TutorDashboardService } from './services/TutorDashboardService.service'
       ChosenProject,
       ModulesEntity,
       ProposalEntity,
+      ActivityEntity
     ]),
   ],
   controllers: [
