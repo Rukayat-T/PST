@@ -130,7 +130,7 @@ export class ProjectService {
       ])
       .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
       .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
-      // .where('tutor.status = :status', { status })
+      .where('tutor.status = :status', { status })
       .groupBy('project.id')
       .addGroupBy('tutor.id')
       .addGroupBy('user.id')
