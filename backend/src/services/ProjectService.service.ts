@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChooseProjectDto } from 'src/DTOs/ChooseprojectDto.dto';
 import { CreateProjectDto } from 'src/DTOs/CreateProject.dto';
 import { EditProjectDto } from 'src/DTOs/EditProjectDto.dto';
+import { ActivityEntity } from 'src/entities/Activities.entity';
 import { ChosenProject } from 'src/entities/ChosenProject';
 import { ModulesEntity } from 'src/entities/Modules';
 import { ProjectEntity } from 'src/entities/Project.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { BaseResponse } from 'src/Responses/BaseResponse';
+import { ActionType } from 'src/util/ActionType.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
 
@@ -25,6 +27,8 @@ export class ProjectService {
     private readonly chosenProjectRepository: Repository<ChosenProject>,
     @InjectRepository(ModulesEntity)
     private readonly modulesRepository: Repository<ModulesEntity>,
+    @InjectRepository(ActivityEntity)
+    private readonly activityRepository: Repository<ActivityEntity>,
   ) {}
 
   async template(): Promise<BaseResponse> {
@@ -73,6 +77,7 @@ export class ProjectService {
       } else {
         project.tutor = tutor;
         const newProject = await this.projectRepository.save(project);
+        this.logActivity(dto.tutorId, ActionType.PROJECT_CREATED, 0, newProject.id, 0)
         return {
           status: 201,
           message: 'successful',
@@ -367,12 +372,19 @@ export class ProjectService {
     }
   }
 
+  /*
+  Check if the student already has a project with the same rank.
+  If yes, push it down by 1.
+  If a project is already at rank 3, push it to rank 4, and so on.
+  Ensure no project exceeds rank 5.
+  */
   // choose project
   async chooseProject(
     id: number,
     dto: ChooseProjectDto,
   ): Promise<BaseResponse> {
     try {
+      //check for student
       const student = await this.studentProfileRepository.findOne({
         where: { id: id },
       });
@@ -383,33 +395,59 @@ export class ProjectService {
         };
       }
 
+      //check if project previously chosen
       const chosenProjectDb = await this.chosenProjectRepository.findOne({
         where: {
           project: { id: dto.projectId },
           student: { id: id },
         },
       });
+
       if (chosenProjectDb) {
         return {
           status: 400,
           message: 'student has already chosen this project',
         };
-      } else {
-        let newChoice = new ChosenProject();
-        newChoice.project = await this.projectRepository.findOne({
-          where: { id: dto.projectId },
-        });
-        newChoice.student = student;
-        newChoice.rank = dto.rank;
-        const chosenProject = await this.chosenProjectRepository.save(
-          newChoice,
-        );
+      } 
+         // Find all projects the student has already chosen
+    let chosenProjects = await this.chosenProjectRepository.find({
+      where: { student: { id: id } },
+      order: { rank: 'ASC' }, // Ensure ordered by rank
+    });
+
+    if (chosenProjects.length >= 5) {
+      return { status: 400, message: 'You cannot choose more than 5 projects' };
+    }
+
+      // Check if the student already has a project at this rank
+      let projectAtRank = chosenProjects.find((p) => p.rank === dto.rank);
+
+      if (projectAtRank) {
+        // Shift ranks for existing projects to make space
+        for (let i = chosenProjects.length - 1; i >= 0; i--) {
+          if (chosenProjects[i].rank >= dto.rank && chosenProjects[i].rank < 5) {
+            chosenProjects[i].rank += 1;
+            await this.chosenProjectRepository.save(chosenProjects[i]);
+          }
+        }
+      }
+
+       // Create and save the new choice
+    let newChoice = new ChosenProject();
+    newChoice.project = await this.projectRepository.findOne({
+      where: { id: dto.projectId },
+    });
+    newChoice.student = student;
+    newChoice.rank = dto.rank;
+    const chosenProject = await this.chosenProjectRepository.save(newChoice);
+
+        this.logActivity(chosenProject.project.tutor.id, ActionType.APPLIED_FOR_PROJECT, id, dto.projectId, 0)
+
         return {
           status: 201,
           message: 'successful',
           response: chosenProject,
         };
-      }
     } catch (error) {
       return {
         status: 400,
@@ -676,4 +714,31 @@ export class ProjectService {
       };
     }
   }
+
+    async logActivity(
+      tutorId: number,
+      actionType: ActionType,
+      studentId: number,
+      projectId: number,
+      proposalId: number
+    ): Promise<void> {
+      const tutor = await this.tutorProfileRepository.findOne({ where: { id: tutorId } });
+      if (!tutor) throw new Error('Tutor not found');
+  
+      const student = await this.studentProfileRepository.findOne({ where: { id: studentId } });
+      if (!student) throw new Error('Student not found');
+  
+      const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;
+      const proposal = null;
+  
+      const activity = this.activityRepository.create({
+        tutor,
+        student,
+        project,
+        proposal,
+        actionType,
+      });
+  
+      await this.activityRepository.save(activity);
+    }
 }

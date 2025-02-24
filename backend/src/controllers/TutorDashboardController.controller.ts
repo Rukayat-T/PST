@@ -34,4 +34,16 @@ export class TutorDashboardController {
   ): Promise<BaseResponse> {
     return await this.tutorDashboardService.getPopularProjects(tutorId);
   }
+
+  @Get('getProjectStatusDistribution/:tutorId')
+  async getProjectStatusDistribution(@Param("tutorId") tutorId: number): Promise<BaseResponse>
+  {
+    return await this.tutorDashboardService.getProjectStatusDistribution(tutorId);
+  }
+
+  @Get('getRecentActivities/:tutorId')
+  async getRecentActivities(@Param("tutorId") tutorId: number): Promise<BaseResponse>
+  {
+    return await this.tutorDashboardService.getRecentActivities(tutorId);
+  }
 }

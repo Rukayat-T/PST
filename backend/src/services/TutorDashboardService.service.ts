@@ -14,6 +14,7 @@ import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
 import { addDays } from 'date-fns';
+import { ActivityEntity } from 'src/entities/Activities.entity';
 
 @Injectable()
 export class TutorDashboardService {
@@ -30,6 +31,8 @@ export class TutorDashboardService {
     private readonly modulesRepository: Repository<ModulesEntity>,
     @InjectRepository(ProposalEntity)
     private readonly proposalRepository: Repository<ProposalEntity>,
+    @InjectRepository(ActivityEntity)
+    private readonly activityRepository: Repository<ActivityEntity>,
 
     private readonly authService: AuthService,
   ) {}
@@ -49,21 +52,7 @@ export class TutorDashboardService {
       };
     }
   }
-
-  //   get cards at top: count active projects, count student applications,
-  //  count project proposals, count assigned projects
-  /*
-return {
-    status: 200,
-    message: "successful",
-    response: {
-        activeProjects: 0,
-        studentApplications: 0,
-        projectProposals: 0,
-        assignedProjects: 0
-    }
-}
-*/
+ 
   async getMetrics(id: number): Promise<BaseResponse> {
     try {
       const tutor = (await this.authService.getTutor(id)).response;
@@ -123,9 +112,30 @@ return {
     }
   }
 
-  // get graphs
-
   //get recent activity
+  async getRecentActivities(tutorId: number): Promise<BaseResponse> {
+    try {
+      const activities = await this.activityRepository.find({
+        where: {
+          tutor : {id: tutorId}
+        },
+        order: {createdAt: 'DESC'},
+        take: 10
+      })
+      
+      return {
+        status: 201,
+        message: 'successful',
+        response: activities,
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
 
   // get popular projects
   async getPopularProjects(id: number): Promise<BaseResponse> {
@@ -178,4 +188,49 @@ return {
       };
     }
   }
+
+  async getProjectStatusDistribution(id: number): Promise<BaseResponse> {
+    try {
+      const drafts = await this.projectRepository.find({
+        where: {
+          tutor: {id: id},
+          status: ProjectStatus.DRAFT
+        }
+      })
+
+      const active = await this.projectRepository.find({
+        where: {
+          tutor: {id: id},
+          status: ProjectStatus.ACTIVE
+        }
+      })
+
+      const assigned = await this.projectRepository.find({
+        where: {
+          tutor: {id: id},
+          status: ProjectStatus.ASSIGNED
+        }
+      })
+
+      const total = drafts.length + active.length + assigned.length
+
+      return {
+        status: 201,
+        message: 'successful',
+        response: {drafts: drafts.length,
+          active: active.length,
+          assigned: assigned.length,
+          total: total
+        },
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
+  
 }
