@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
+import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 
 export class EditProjectDto {
   @IsString()
@@ -57,4 +58,11 @@ export class EditProjectDto {
     required: false,
   })
   expectedDeliverable?: string;
+
+  @ApiProperty({
+      example: 'DRAFT',
+      description: "status of project, can be DRAFT, ASSIGNED OR ACTIVE",
+      required: false
+    })
+    status?: ProjectStatus;
 }

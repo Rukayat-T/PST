@@ -54,6 +54,7 @@ export class ProjectService {
       project.description = dto.description;
       project.expectedDeliverable = dto.expectedDeliverable;
       project.tags = dto.tags;
+      project.status = dto.status
       if (dto?.resources) {
         project.resources = dto.resources;
       }
@@ -130,7 +131,7 @@ export class ProjectService {
       ])
       .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
       .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
-      // .where('tutor.status = :status', { status })
+      .where('tutor.status = :status', { status })
       .groupBy('project.id')
       .addGroupBy('tutor.id')
       .addGroupBy('user.id')
@@ -525,6 +526,7 @@ export class ProjectService {
 
       // Update fields
       if (editProjectDto.title) project.title = editProjectDto.title;
+      if(editProjectDto.status) project.status =editProjectDto.status
       if (editProjectDto.description)
         project.description = editProjectDto.description;
       if (editProjectDto.expectedDeliverable) {
