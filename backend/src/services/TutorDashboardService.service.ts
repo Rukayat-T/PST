@@ -119,8 +119,9 @@ export class TutorDashboardService {
         where: {
           tutor : {id: tutorId}
         },
+        relations : ['project', 'proposal', 'student'],
         order: {createdAt: 'DESC'},
-        take: 10
+        take: 6
       })
       
       return {
@@ -129,6 +130,7 @@ export class TutorDashboardService {
         response: activities,
       };
     } catch (error) {
+      console.log(error)
       return {
         status: 400,
         message: 'Bad Request',
