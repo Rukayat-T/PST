@@ -88,6 +88,7 @@ export class ProposalService {
       }
       const proposal = await this.proposalRepository.findOne({
         where: { id: proposalId, created_by: { id: studentId } },
+        relations: ['tutor']
       });
       if (!proposal) {
         return {
@@ -105,6 +106,7 @@ export class ProposalService {
         response: proposal,
       };
     } catch (error) {
+      console.log(error)
       return {
         status: 400,
         message: 'Bad Request',
@@ -306,7 +308,7 @@ export class ProposalService {
     const student = studentId ? await this.studentProfileRepository.findOne({ where: { id: studentId } }) : null;
     if (studentId !== undefined && !student) throw new Error('Student not found');
 
-    const project = projectId ? await this.projectRepository.findOne({ where: { id: projectId } }) : null;
+    const project = null;
     const proposal = proposalId ? await this.proposalRepository.findOne({ where: { id: proposalId } }) : null;
     if (proposalId !== undefined && !proposal) throw new Error('Proposal not found');
 
