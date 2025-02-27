@@ -6,9 +6,9 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('test')
 @Controller('test')
 export class AppController {
-  constructor(private readonly mailService: MailService) {}
-  @Get()
-  getHello(): Promise<any> {
-    return this.mailService.sendMail();
-  }
+//   constructor(private readonly mailService: MailService) {}
+//   @Get()
+//   getHello(): Promise<any> {
+//     return this.mailService.sendMail();
+  // }
 }

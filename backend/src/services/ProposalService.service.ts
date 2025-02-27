@@ -8,6 +8,7 @@ import { ProjectEntity } from 'src/entities/Project.entity';
 import { ProposalEntity } from 'src/entities/Proposal.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
+import { MailService } from 'src/Mail/Mail.service';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ActionType } from 'src/util/ActionType.enum';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
@@ -28,8 +29,10 @@ export class ProposalService {
     private readonly activityRepository: Repository<ActivityEntity>,
      @InjectRepository(ProjectEntity)
         private readonly projectRepository: Repository<ProjectEntity>,
+    
 
     private readonly authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   // create poposal
@@ -57,6 +60,7 @@ export class ProposalService {
       }
 
       const saved = await this.proposalRepository.save(proposal);
+      this.mailService.sendProposalCreationStatusUpdate(proposal, proposal.status)
       this.logActivity(dto.proposed_to, ActionType.PROPOSAL_SUBMITTED, dto.created_by, undefined, saved.id)
 
       return {
@@ -88,7 +92,7 @@ export class ProposalService {
       }
       const proposal = await this.proposalRepository.findOne({
         where: { id: proposalId, created_by: { id: studentId } },
-        relations: ['tutor']
+        relations: ['tutor',"created_by"]
       });
       if (!proposal) {
         return {
@@ -100,6 +104,7 @@ export class ProposalService {
       await this.proposalRepository.save(proposal);
 
       this.logActivity(proposal.tutor.id, ActionType.PROPOSAL_WITHDRAWN, studentId, undefined, proposalId )
+      this.mailService.sendProposalWithdrawalStatusUpdate(proposal, proposal.status)
       return {
         status: 201,
         message: 'successful',
@@ -142,6 +147,8 @@ export class ProposalService {
       proposal.status = ProposalStatus.APPROVED;
       await this.proposalRepository.save(proposal);
 
+      this.mailService.sendProposalApprovalStatusUpdate(proposal, proposal.status)
+
       this.logActivity(tutorId, ActionType.PROPOSAL_ACCEPTED, proposal.created_by.id, undefined, proposalId )
       return {
         status: 201,
@@ -182,6 +189,7 @@ export class ProposalService {
       proposal.status = ProposalStatus.REJECTED;
       await this.proposalRepository.save(proposal);
       const studentId = proposal.created_by.id
+      this.mailService.sendProposalRejectionStatusUpdate(proposal, proposal.status)
       this.logActivity(tutorId, ActionType.PROPOSAL_REJECTED, studentId, undefined, proposalId )
       return {
         status: 201,

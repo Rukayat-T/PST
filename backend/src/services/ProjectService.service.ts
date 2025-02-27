@@ -9,6 +9,7 @@ import { ModulesEntity } from 'src/entities/Modules';
 import { ProjectEntity } from 'src/entities/Project.entity';
 import { StudentProfile } from 'src/entities/StudentProfile.entity';
 import { TutorProfile } from 'src/entities/TutorProfile.entity';
+import { MailService } from 'src/Mail/Mail.service';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ActionType } from 'src/util/ActionType.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
@@ -29,6 +30,9 @@ export class ProjectService {
     private readonly modulesRepository: Repository<ModulesEntity>,
     @InjectRepository(ActivityEntity)
     private readonly activityRepository: Repository<ActivityEntity>,
+
+
+    private readonly mailService: MailService,
   ) {}
 
   async template(): Promise<BaseResponse> {
@@ -442,6 +446,8 @@ export class ProjectService {
     newChoice.rank = dto.rank;
     const chosenProject = await this.chosenProjectRepository.save(newChoice);
 
+    this.mailService.sendProjectApplicationStatusUpdate(chosenProject.project, chosenProject.project.status)
+
         this.logActivity( ActionType.APPLIED_FOR_PROJECT, chosenProject.project.tutor.id, id, dto.projectId)
 
         return {
@@ -466,6 +472,7 @@ export class ProjectService {
         relations: [
           'chosenProjects',
           'chosenProjects.project',
+          'chosenProjects.project.tutor.user'
           // 'chosenProjects.student ',
         ],
       });

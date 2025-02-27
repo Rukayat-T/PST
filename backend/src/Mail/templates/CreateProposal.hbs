@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Proposal Email</title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif">
+    <table role="presentation" style="width: 100%; height: 100vh; background-color: #f4f4f4; padding: 0">
+      <tr>
+        <td align="center" valign="top">
+          <!-- Main Email Container -->
+          <table role="presentation" style="width: 40%; background-color: #fff; border: 3px solid #5c0061; border-radius: 10px; padding: 40px 30px">
+            <tr>
+              <td align="center">
+                <!-- Aston Logo -->
+                <img src="https://i.postimg.cc/yY8PXfry/temp-Imagei-G8es-N.avif" alt="Aston logo" width="250" height="100" style="margin-top: 40px; margin-bottom: 30px" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <!-- Greeting -->
+                <p style="margin-bottom: 20px">Dear {{ tutorName }},</p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <!-- Message Title -->
+                <p style="font-weight: bold; font-size: 18px; margin-bottom: 10px; margin-top: 0; text-align: center">A proposal has been created for you to view</p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <!-- Purple Section (Proposal Info) -->
+                <table role="presentation" style="width: 100%; background-color: #c793c524; padding: 20px 20px 0px 20px; border-radius: 8px">
+                  <tr>
+                    <td style="font-weight: bold; padding-bottom: 20px">Proposal Title:</td>
+                    <td style="padding-bottom: 20px">{{ proposalName }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: bold; padding-bottom: 20px; vertical-align: baseline">Description:</td>
+                    <td style="padding-bottom: 20px">{{{ description }}}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: bold; padding-bottom: 20px; width: 30%">Proposal Status:</td>
+                    <td style="padding-bottom: 20px">{{ status }}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <!-- Review Message -->
+                <p style="font-weight: bold; margin-bottom: 0; text-align: center">Please review the student’s proposal.</p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top: 20px">
+                <!-- Review Button -->
+                <a href={{reviewLink}} style="background-color: #f3e6f8; border: 1.5px solid #5c0061; padding: 10px 20px; font-weight: bold; color: #000000; text-decoration: none; border-radius: 8px"> Click to review </a>
+              </td>
+            </tr>
+          </table>
+          <!-- End of Main Email Container -->
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+

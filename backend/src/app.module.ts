@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -39,6 +39,7 @@ import { ActivityEntity } from './entities/Activities.entity';
         // ca: process.env.CERTIFICATE.toString(),
       },
     }),
+    // forwardRef(() => MailModule),
     AuthModule,
     MailModule,
     TypeOrmModule.forFeature([
@@ -56,5 +57,6 @@ import { ActivityEntity } from './entities/Activities.entity';
     TutorDashboardController,
   ],
   providers: [ProjectService, ProposalService, TutorDashboardService],
+  // exports:[ProposalService]
 })
 export class AppModule {}
