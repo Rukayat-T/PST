@@ -16,5 +16,14 @@ export class ChooseProjectDto {
     description: 'project rank',
     required: true,
   })
-  rank?: number;
+  rank: number;
+
+  @IsString()
+  @ApiProperty({
+    example: 'I said what I said',
+    description: 'student\'s statement of interest',
+    required: false,
+  })
+  statementOfInterest: string
+
 }

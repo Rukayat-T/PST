@@ -12,6 +12,7 @@ import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { MailService } from 'src/Mail/Mail.service';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ActionType } from 'src/util/ActionType.enum';
+import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
 
@@ -444,6 +445,8 @@ export class ProjectService {
     });
     newChoice.student = student;
     newChoice.rank = dto.rank;
+    newChoice.statementOfInterest = dto.statementOfInterest
+    newChoice.status = ChoiceStatus.APPLIED
     const chosenProject = await this.chosenProjectRepository.save(newChoice);
 
     this.mailService.sendProjectApplicationStatusUpdate(chosenProject.project, chosenProject.project.status)
