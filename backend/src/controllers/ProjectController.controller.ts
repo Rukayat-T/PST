@@ -19,6 +19,8 @@ import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ProjectService } from 'src/services/ProjectService.service';
 import { ChooseProjectDto } from 'src/DTOs/ChooseprojectDto.dto';
 import { EditProjectDto } from 'src/DTOs/EditProjectDto.dto';
+import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
+import { UpdateChoiceStatusDto } from 'src/DTOs/UpdateChoiceStatusDto.dto';
 
 @ApiBearerAuth()
 @ApiTags('Projects Controller')
@@ -286,6 +288,16 @@ export class ProjectController {
   async getStudentsAppsForProject(
     @Param('projectId') projectId: number,
   ): Promise<BaseResponse> {
-    return await this.projectService.getStudentsAppsForProject(projectId);
+    return await this.projectService.getStudentsAppsForProjectRanked(projectId);
+  }
+
+  @Put("updateStudentChoiceStatus/:choiceId")
+  async updateStudentChoiceStatus(@Param('choiceId') choiceId: number, @Body() updatechoiceDto: UpdateChoiceStatusDto): Promise<BaseResponse>{
+    return await this.projectService.editChoiceStatus(choiceId, updatechoiceDto)
+  }
+
+  @Get("testMail")
+  async testMail(): Promise<any>{
+    return this.projectService.testMail()
   }
 }

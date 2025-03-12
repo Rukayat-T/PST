@@ -13,6 +13,7 @@ import { TutorProfile } from './TutorProfile.entity';
 import { ProjectEntity } from './Project.entity';
 import { Exclude } from '@nestjs/class-transformer';
 import { StudentProfile } from './StudentProfile.entity';
+import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 
 @Entity('chosen_project_entity')
 export class ChosenProject {
@@ -35,4 +36,30 @@ export class ChosenProject {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({
+      type: 'enum',
+      enum: ChoiceStatus,
+      nullable: true,
+      default: ChoiceStatus.APPLIED
+    })
+    status: ChoiceStatus;
+
+    @Column({
+      nullable: true,
+    })
+    statementOfInterest: string
+
+    @Column({
+      nullable: true,
+      default: 0
+    })
+    statementOfInterestScore: number
+
+    @Column({
+      nullable: true,
+      default: 0
+    })
+    hasCommunicated: number
+
 }
