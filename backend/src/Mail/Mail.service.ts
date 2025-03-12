@@ -9,6 +9,7 @@ import { ProposalService } from 'src/services/ProposalService.service';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
 import { Repository } from 'typeorm';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
+import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 
 const window = new JSDOM("").window; // Create a fake browser window
 const DOMPurify = createDOMPurify(window); // Create a DOMPurify instance
@@ -110,7 +111,8 @@ export class MailService {
     })
   }
 
-  async sendProjectApplicationStatusUpdate(project: any, status: ProjectStatus): Promise<any> {
+  // to tutor when student applies for a project
+  async sendProjectApplicationMailToTutor(project: any, student: any, status: ChoiceStatus): Promise<any> {
     const sanitizedDescription = DOMPurify.sanitize(project?.description); // Sanitize HTML
     const maxLength = 100
     const truncatedDescription = sanitizedDescription.length > maxLength
@@ -122,13 +124,64 @@ export class MailService {
       to: "tewogbaderukayat@gmail.com",
       from: 'Project Selection Tool <pst092024@gmail.com>',
       subject: "Project application",
-      template: "./ChooseProject",
+      template: "./ProjectApplicationToTutor",
       context: {
         tutorName: project.tutor.user.name,
         projectName: project.title,
         description: truncatedDescription,
+        studentName: student.user.name,
         status,
         reviewLink: `http://localhost:3000/Login?redirect=/Tutor/projects/${project.id}/view_students`
+      },
+    })
+  }
+
+  // to student when they apply for a project
+  async sendProjectApplicationMailToStudent(project: any, student: any, status: ChoiceStatus): Promise<any> {
+    const sanitizedDescription = DOMPurify.sanitize(project?.description); // Sanitize HTML
+    const maxLength = 100
+    const truncatedDescription = sanitizedDescription.length > maxLength
+      ? sanitizedDescription.substring(0, maxLength) + "..."
+      : sanitizedDescription;
+
+    await this.mailerService.sendMail({
+      // to: proposal.tutor.user.email,
+      to: "tewogbaderukayat@gmail.com",
+      from: 'Project Selection Tool <pst092024@gmail.com>',
+      subject: "Your project application",
+      template: "./ProjectApplicationToStudent",
+      context: {
+        studentName: student.user.name,
+        tutorName: project.tutor.user.name,
+        projectName: project.title,
+        description: truncatedDescription,
+        status,
+        reviewLink: `http://localhost:3000/Login?redirect=/Choices`
+      },
+    })
+  }
+
+  // to student when their application status changes
+  async sendProjectApplicationStatusUpdateToStudent(project: any, student: any, status: ChoiceStatus): Promise<any> {
+    const sanitizedDescription = DOMPurify.sanitize(project?.description); // Sanitize HTML
+    const maxLength = 100
+    const truncatedDescription = sanitizedDescription.length > maxLength
+      ? sanitizedDescription.substring(0, maxLength) + "..."
+      : sanitizedDescription;
+
+    await this.mailerService.sendMail({
+      // to: proposal.tutor.user.email,
+      to: "tewogbaderukayat@gmail.com",
+      from: 'Project Selection Tool <pst092024@gmail.com>',
+      subject: "Your project application status has been updated",
+      template: "./ApplicationStatusUpdateToStudent",
+      context: {
+        studentName: student.user.name,
+        tutorName: project.tutor.user.name,
+        projectName: project.title,
+        description: truncatedDescription,
+        status,
+        reviewLink: `http://localhost:3000/Login?redirect=/Choices`
       },
     })
   }

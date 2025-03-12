@@ -49,4 +49,17 @@ export class ChosenProject {
       nullable: true,
     })
     statementOfInterest: string
+
+    @Column({
+      nullable: true,
+      default: 0
+    })
+    statementOfInterestScore: number
+
+    @Column({
+      nullable: true,
+      default: 0
+    })
+    hasCommunicated: number
+
 }
