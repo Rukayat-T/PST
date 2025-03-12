@@ -300,4 +300,12 @@ export class ProjectController {
   async testMail(): Promise<any>{
     return this.projectService.testMail()
   }
+
+
+
+  @Post("assignProjectToStudent/:studentId/:projectId")
+  async assignProjectToStudent(@Param('studentId') studentId: number, @Param('projectId') projectId: number) : Promise<BaseResponse>{
+    return this.projectService.assignProjectToStudent(studentId, projectId)
+  }
+  
 }
