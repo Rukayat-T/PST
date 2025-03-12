@@ -26,4 +26,12 @@ export class ChooseProjectDto {
   })
   statementOfInterest: string
 
+  @IsNumber()
+  @ApiProperty({
+    example: 0,
+    description: '0 if student has not spoken with supervisor, 1 if they have',
+    required: false
+  })
+  hasCommunicated: number
+
 }
