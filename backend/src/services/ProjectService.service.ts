@@ -483,6 +483,7 @@ Otherwise, proceed with saving the chosen project.
       newChoice.student = student;
       newChoice.rank = dto.rank;
       newChoice.statementOfInterest = dto.statementOfInterest
+      newChoice.hasCommunicated = dto.hasCommunicated
 
       // Mandatory check: Ensure the student has completed all prerequisite modules
       const studentModules = new Set(student.previousModules.map((mod) => mod.id));
