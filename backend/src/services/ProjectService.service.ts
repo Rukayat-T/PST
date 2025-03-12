@@ -898,8 +898,8 @@ async getStudentsAppsForProjectRanked(id: number): Promise<BaseResponse> {
     studentsScores.sort((a,b)=> b.score - a.score) // desc
     let bestStudent = studentsScores[0].student.student.user.name
     return {
-      status: 404,
-      message: 'Project not found, enter valid id',
+      status: 201,
+      message: 'applications found',
       response: 
       {rankedStudents: studentsScores,
         bestStudent
