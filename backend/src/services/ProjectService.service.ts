@@ -393,7 +393,7 @@ export class ProjectService {
       where: { id: 1 },
       relations : ['previousModules']
     });
-    return await this.mailService.sendProjectApplicationMailToTutor(project, student, ChoiceStatus.ALLOCATED)
+    return await this.mailService.sendProjectApplicationStatusUpdateToStudent(project, student, ChoiceStatus.ALLOCATED)
     
   }
 
@@ -746,6 +746,7 @@ Otherwise, proceed with saving the chosen project.
         where: {
           id: id
         },
+        relations: ['student', 'project', 'project.tutor', 'project.tutor.user']
       });
       if (!chosenProject){
         return {
