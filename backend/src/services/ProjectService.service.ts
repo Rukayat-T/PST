@@ -16,6 +16,7 @@ import { ActionType } from 'src/util/ActionType.enum';
 import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
+import { RateStatement } from '../DTOs/RateSTatementDto.dto';
 
 @Injectable()
 export class ProjectService {
@@ -483,6 +484,7 @@ Otherwise, proceed with saving the chosen project.
       newChoice.student = student;
       newChoice.rank = dto.rank;
       newChoice.statementOfInterest = dto.statementOfInterest
+      if (dto.statementOfInterest === "") newChoice.statementOfInterestScore = 0 
       newChoice.hasCommunicated = dto.hasCommunicated
 
       // Mandatory check: Ensure the student has completed all prerequisite modules
@@ -911,7 +913,7 @@ async getStudentsAppsForProjectRanked(id: number): Promise<BaseResponse> {
   }
 }
 
-  async assignProjectToStudent(studentId: number, projectId: number) : Promise<BaseResponse>{
+async assignProjectToStudent(studentId: number, projectId: number) : Promise<BaseResponse>{
     try {
       const student = await this.studentProfileRepository.findOne({
         where: { id: studentId },
@@ -967,8 +969,7 @@ async getStudentsAppsForProjectRanked(id: number): Promise<BaseResponse> {
   
       return {
         status: 201,
-        message: 'successful',
-        response: '',
+        message: 'successfully assigned',
       };
     } catch (error) {
       return {
@@ -1006,5 +1007,38 @@ async getStudentsAppsForProjectRanked(id: number): Promise<BaseResponse> {
   
       await this.activityRepository.save(activity);
     }
+
+async rateStatementOfInterest(choiceId: number, dto: RateStatement): Promise<BaseResponse>{
+  try {
+
+    const app = await this.chosenProjectRepository.findOne({
+      where: {
+        id: choiceId
+      }
+    })
+
+    if (!app){
+      return {
+        status: 404,
+        message: 'choice not found'
+      };
+    }
+    app.statementOfInterestScore = dto.score
+
+    this.chosenProjectRepository.save(app)
+
+    return {
+      status: 201,
+      message: 'successful',
+      response: app,
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
 }
 

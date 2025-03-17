@@ -21,6 +21,7 @@ import { ChooseProjectDto } from 'src/DTOs/ChooseprojectDto.dto';
 import { EditProjectDto } from 'src/DTOs/EditProjectDto.dto';
 import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { UpdateChoiceStatusDto } from 'src/DTOs/UpdateChoiceStatusDto.dto';
+import { RateStatement } from 'src/DTOs/RateSTatementDto.dto';
 
 @ApiBearerAuth()
 @ApiTags('Projects Controller')
@@ -306,6 +307,11 @@ export class ProjectController {
   @Post("assignProjectToStudent/:studentId/:projectId")
   async assignProjectToStudent(@Param('studentId') studentId: number, @Param('projectId') projectId: number) : Promise<BaseResponse>{
     return this.projectService.assignProjectToStudent(studentId, projectId)
+  }
+
+  @Put("rateStatementOfInterest/:choiceId")
+  async rateStatemen(@Param('choiceId') choiceId: number, @Body() dto: RateStatement): Promise<BaseResponse>{
+    return this.projectService.rateStatementOfInterest(choiceId, dto);
   }
   
 }
