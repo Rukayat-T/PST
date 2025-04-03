@@ -1137,6 +1137,7 @@ async getAdminInputRequest(requestId: number): Promise<BaseResponse> {
     return {
       status: 201,
       message: 'successful',
+      response: request,
     };
   } catch (error) {
     return {
