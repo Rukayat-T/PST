@@ -174,6 +174,60 @@ export class AuthService {
     }
   }
 
+  async createAdmin(dto: CreateTutorProfileDto): Promise<BaseResponse> {
+    try {
+      const userFromDb = await this.userRepository.findOne({
+        where: { email: dto.email },
+      });
+      if (!userFromDb) {
+        let user = new UserEntity();
+        user.email = dto.email;
+        user.name = dto.name;
+        user.role = dto.role;
+
+        if (dto.password1 == dto.password2) {
+          const hashed = await this.hashPassword(dto.password1);
+          user.password = hashed;
+          const newUser = await this.userRepository.save(user);
+
+          if (user.role == 'tutor' || user.role == 'admin') {
+            let newTutor = new TutorProfile();
+            newTutor.user = newUser;
+            newTutor.specializations = dto.specializations;
+            newTutor.isAdmin = true
+            const tutor = await this.tutorProfileRepository.save(newTutor);
+            return {
+              status: 201,
+              message: 'new admin created',
+              response: tutor,
+            };
+          }
+
+          return {
+            status: 400,
+            message: 'Role should be tutor',
+            response: newUser,
+          };
+        }
+        return {
+          status: 400,
+          message: "passwords don't match",
+        };
+      }
+      return {
+        status: 400,
+        message: 'user already exists',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
   // get student
   async getStudent(studentId: number): Promise<BaseResponse> {
     try {
@@ -317,6 +371,7 @@ export class AuthService {
             profileId: findUser.studentProfile
               ? findUser.studentProfile.id
               : findUser.tutorProfile.id,
+            isAdmin: findUser.tutorProfile.isAdmin
           };
 
           const token = await this.jwtService.signAsync({ user });

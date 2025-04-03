@@ -35,6 +35,9 @@ export class TutorProfile {
   @JoinColumn()
   user: UserEntity;
 
+  @Column({nullable: true})
+  isAdmin: boolean
+
   @OneToMany(() => ProposalEntity, (proposal) => proposal.tutor)
   proposals: ProposalEntity[];
 }

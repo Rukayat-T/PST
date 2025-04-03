@@ -22,6 +22,7 @@ import { EditProjectDto } from 'src/DTOs/EditProjectDto.dto';
 import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { UpdateChoiceStatusDto } from 'src/DTOs/UpdateChoiceStatusDto.dto';
 import { RateStatement } from 'src/DTOs/RateSTatementDto.dto';
+import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
 
 @ApiBearerAuth()
 @ApiTags('Projects Controller')
@@ -310,8 +311,23 @@ export class ProjectController {
   }
 
   @Put("rateStatementOfInterest/:choiceId")
-  async rateStatemen(@Param('choiceId') choiceId: number, @Body() dto: RateStatement): Promise<BaseResponse>{
+  async rateStatement(@Param('choiceId') choiceId: number, @Body() dto: RateStatement): Promise<BaseResponse>{
     return this.projectService.rateStatementOfInterest(choiceId, dto);
+  }
+
+  @Post("requestAdminInput")
+  async requestAdminInput(@Body() dto: CreateAdminInputDto) : Promise<BaseResponse>{
+    return this.projectService.createAdminInputRequest(dto);
+  }
+
+  @Put("addAdminComments/:requestId")
+  async addAdminComments(@Param('requestId') requestId: number, @Body() comment: string): Promise<BaseResponse>{
+    return this.projectService.addAdminComments(requestId, comment)
+  }
+
+  @Get("getAdminInputRequest/:requestId")
+  async getAminInputRequest(@Param('requestId') requestId: number): Promise<BaseResponse>{
+    return await this.projectService.getAdminInputRequest(requestId);
   }
   
 }
