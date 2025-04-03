@@ -324,5 +324,10 @@ export class ProjectController {
   async addAdminComments(@Param('requestId') requestId: number, @Body() comment: string): Promise<BaseResponse>{
     return this.projectService.addAdminComments(requestId, comment)
   }
+
+  @Get("getAdminInputRequest/:requestId")
+  async getAminInputRequest(@Param('requestId') requestId: number): Promise<BaseResponse>{
+    return await this.projectService.getAdminInputRequest(requestId);
+  }
   
 }

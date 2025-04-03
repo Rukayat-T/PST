@@ -21,6 +21,7 @@ import { TutorDashboardController } from './controllers/TutorDashboardController
 import { TutorDashboardService } from './services/TutorDashboardService.service';
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { ActivityEntity } from './entities/Activities.entity';
+import { AdminInputRequest } from './entities/AdminInputRequest.enity';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { ActivityEntity } from './entities/Activities.entity';
       ChosenProject,
       ModulesEntity,
       ProposalEntity,
-      ActivityEntity
+      ActivityEntity,
+      AdminInputRequest
     ]),
   ],
   controllers: [

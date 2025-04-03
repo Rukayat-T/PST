@@ -1096,6 +1096,13 @@ async addAdminComments(requestId: number, comment: string): Promise<BaseResponse
         id: requestId
       }
     })
+    if (!request){
+      await this.adminInputRequstRepository.save(request)
+    return {
+      status: 404,
+      message: 'request not found',
+    };
+    }
 
     request.adminComments = comment
     await this.adminInputRequstRepository.save(request)
@@ -1103,6 +1110,33 @@ async addAdminComments(requestId: number, comment: string): Promise<BaseResponse
       status: 201,
       message: 'successful',
       response: request,
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
+async getAdminInputRequest(requestId: number): Promise<BaseResponse> {
+  try {
+    const request = await this.adminInputRequstRepository.findOne({
+      where: {
+        id: requestId
+      }
+    })
+    if (!request){
+      await this.adminInputRequstRepository.save(request)
+    return {
+      status: 404,
+      message: 'request not found',
+    };
+    }
+    return {
+      status: 201,
+      message: 'successful',
     };
   } catch (error) {
     return {
