@@ -17,6 +17,8 @@ import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { Brackets, Repository } from 'typeorm';
 import { RateStatement } from '../DTOs/RateSTatementDto.dto';
+import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
+import { AdminInputRequest } from 'src/entities/AdminInputRequest.enity';
 
 @Injectable()
 export class ProjectService {
@@ -33,7 +35,8 @@ export class ProjectService {
     private readonly modulesRepository: Repository<ModulesEntity>,
     @InjectRepository(ActivityEntity)
     private readonly activityRepository: Repository<ActivityEntity>,
-
+    @InjectRepository(AdminInputRequest)
+    private readonly adminInputRequstRepository: Repository<AdminInputRequest>,
 
     private readonly mailService: MailService,
   ) {}
@@ -1032,6 +1035,74 @@ async rateStatementOfInterest(choiceId: number, dto: RateStatement): Promise<Bas
       status: 201,
       message: 'successful',
       response: app,
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
+async createAdminInputRequest(dto: CreateAdminInputDto): Promise<BaseResponse> {
+  try {
+    const project = await this.projectRepository.findOne({
+      where: { id: dto.projectId },
+      relations: {
+      },
+    });
+    if (!project) {
+      return {
+        status: 404,
+        message: 'Project not found, enter valid id',
+      };
+    } 
+
+    const admin = await this.tutorProfileRepository.findOne({
+      where: {
+        id: dto.adminTutorProfileId,
+        isAdmin: true
+      }
+    })
+
+    let newRequest = new AdminInputRequest()
+    newRequest.admin = admin
+    newRequest.adminComments = null
+    newRequest.project = project
+    newRequest.proposal = null
+    newRequest.tutorComments = dto.tutorComments
+
+    const saved = await this.adminInputRequstRepository.save(newRequest)
+    return {
+      status: 201,
+      message: 'successful',
+      response: saved,
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+  
+}
+
+async addAdminComments(requestId: number, comment: string): Promise<BaseResponse> {
+  try {
+    const request = await this.adminInputRequstRepository.findOne({
+      where: {
+        id: requestId
+      }
+    })
+
+    request.adminComments = comment
+    await this.adminInputRequstRepository.save(request)
+    return {
+      status: 201,
+      message: 'successful',
+      response: request,
     };
   } catch (error) {
     return {
