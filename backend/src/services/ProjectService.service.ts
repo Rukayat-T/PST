@@ -1125,7 +1125,8 @@ async getAdminInputRequest(requestId: number): Promise<BaseResponse> {
     const request = await this.adminInputRequstRepository.findOne({
       where: {
         id: requestId
-      }
+      },
+      relations: ['project', 'admin']
     })
     if (!request){
       await this.adminInputRequstRepository.save(request)

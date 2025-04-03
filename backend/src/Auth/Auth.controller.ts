@@ -32,6 +32,13 @@ export class AuthController {
     return await this.authService.createTutor(dto);
   }
 
+  @Post('createAdminUser')
+  async createAdminUser(
+    @Body() dto: CreateTutorProfileDto,
+  ): Promise<BaseResponse> {
+    return await this.authService.createAdmin(dto);
+  }
+
   @Post('login')
   async login(@Body() dto: LoginDto): Promise<any> {
     return await this.authService.login(dto);
