@@ -315,19 +315,25 @@ export class ProjectController {
     return this.projectService.rateStatementOfInterest(choiceId, dto);
   }
 
-  @Post("requestAdminInput")
+  @Post("conflicts/requestAdminInput")
   async requestAdminInput(@Body() dto: CreateAdminInputDto) : Promise<BaseResponse>{
     return this.projectService.createAdminInputRequest(dto);
   }
 
-  @Put("addAdminComments/:requestId")
+  @Put("conflicts/addAdminComments/:requestId")
   async addAdminComments(@Param('requestId') requestId: number, @Body() comment: string): Promise<BaseResponse>{
     return this.projectService.addAdminComments(requestId, comment)
   }
 
-  @Get("getAdminInputRequest/:requestId")
-  async getAminInputRequest(@Param('requestId') requestId: number): Promise<BaseResponse>{
-    return await this.projectService.getAdminInputRequest(requestId);
+  @Get("conflicts/getConflict/:conflictId")
+  async getConflict(@Param('conflictId') conflictId: number): Promise<BaseResponse>{
+    return await this.projectService.getConflict(conflictId);
   }
+
+  @Get("conflicts/getAllConflicts/:adminId")
+  async getAdminsConflicts(@Param('adminId') adminId: number): Promise<BaseResponse> {
+    return await this.projectService.getAllConflicts(adminId);
+  }
+
   
 }
