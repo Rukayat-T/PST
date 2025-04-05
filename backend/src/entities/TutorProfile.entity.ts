@@ -11,6 +11,7 @@ import {
 import { UserEntity } from './UserEntity.entity';
 import { ProjectEntity } from './Project.entity';
 import { ProposalEntity } from './Proposal.entity';
+import { AdminInputRequest } from './AdminInputRequest.enity';
 
 @Entity('tutor_profile')
 export class TutorProfile {
@@ -40,4 +41,7 @@ export class TutorProfile {
 
   @OneToMany(() => ProposalEntity, (proposal) => proposal.tutor)
   proposals: ProposalEntity[];
+
+  @OneToMany(() => AdminInputRequest, (conflict) => conflict.admin)
+  adminConflicts: AdminInputRequest[];
 }

@@ -1148,5 +1148,73 @@ async getAdminInputRequest(requestId: number): Promise<BaseResponse> {
     };
   }
 }
+
+async getAllConflicts(adminId: number): Promise<BaseResponse>{
+  try {
+    const conflicts = await this.adminInputRequstRepository.find({
+      where: {
+        admin: {id: adminId}
+      },
+      relations: ['admin', 'project']
+    }
+    )
+    if (!conflicts){
+      return {
+        status: 201,
+        message: 'No conflicts',
+      };
+    }
+    return {
+      status: 201,
+      message: 'successful',
+      response: conflicts,
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
+async getConflict(id: number): Promise<BaseResponse> {
+  try {
+    const conflict = await this.adminInputRequstRepository.findOne({
+      where:{
+        id: id
+      },
+      relations: ['project']
+    })
+    if (!conflict){
+      return {
+        status: 404,
+        message: 'Conflict not found',
+      };
+    }
+    const project = conflict.project
+    const applications = (await this.getStudentsAppsForProject(project.id))
+    if (!applications.response){
+      return {
+        status: 404,
+        message: 'There are no applications for this project',
+      };
+    }
+    const projectApps = applications.response
+    return {
+      status: 201,
+      message: 'successful',
+      response: {conflict, applications: projectApps}
+    };
+
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
 }
 
