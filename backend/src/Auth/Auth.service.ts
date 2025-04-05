@@ -13,6 +13,7 @@ import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { LoginDto } from 'src/DTOs/LoginDto.dto';
 import { response } from 'express';
 import { ModulesEntity } from 'src/entities/Modules';
+import { Role } from 'src/entities/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -363,21 +364,37 @@ export class AuthService {
           findUser,
         );
         if (validate == true) {
-          const user = {
-            id: findUser.id,
-            name: findUser.name,
-            email: findUser.email,
-            role: findUser.role,
-            profileId: findUser.studentProfile
-              ? findUser.studentProfile.id
-              : findUser.tutorProfile.id,
-            isAdmin: findUser.tutorProfile.isAdmin
-          };
-
-          const token = await this.jwtService.signAsync({ user });
+          if (findUser.role == Role.TUTOR){
+            const user = {
+              id: findUser.id,
+              name: findUser.name,
+              email: findUser.email,
+              role: findUser.role,
+              profileId: findUser.studentProfile
+                ? findUser.studentProfile.id
+                : findUser.tutorProfile.id,
+              isAdmin: findUser.tutorProfile.isAdmin
+            };
+            const token = await this.jwtService.signAsync({ user });
           return {
             token: token,
           };
+          }
+          else{
+            const user = {
+              id: findUser.id,
+              name: findUser.name,
+              email: findUser.email,
+              role: findUser.role,
+              profileId: findUser.studentProfile
+                ? findUser.studentProfile.id
+                : findUser.tutorProfile.id,
+            };
+            const token = await this.jwtService.signAsync({ user });
+          return {
+            token: token,
+          };
+          }
         } else {
           return {
             status: 400,
@@ -399,7 +416,7 @@ export class AuthService {
     }
   }
 
-  async getAlltutors(): Promise<BaseResponse> {
+  async getAllTutors(): Promise<BaseResponse> {
     try {
       const tutors = await this.tutorProfileRepository.find();
       return {
@@ -416,4 +433,28 @@ export class AuthService {
       };
     }
   }
+
+  async getAllAdmins(): Promise<BaseResponse> {
+    try {
+      const tutors = await this.tutorProfileRepository.find({
+        where:{
+          isAdmin: true
+        }
+    });
+      return {
+        status: 201,
+        message: 'Tutors found',
+        response: tutors,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: 500,
+        message: 'bad request',
+        response: error.message,
+      };
+    }
+  }
+
+
 }
