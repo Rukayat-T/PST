@@ -11,6 +11,7 @@ import { TutorProfile } from 'src/entities/TutorProfile.entity';
 import { MailService } from 'src/Mail/Mail.service';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ActionType } from 'src/util/ActionType.enum';
+import { ProjectStatus } from 'src/util/ProjectStatus.enum';
 import { ProposalStatus } from 'src/util/ProposalStatus.enum';
 import { Repository, In } from 'typeorm';
 
@@ -150,6 +151,23 @@ export class ProposalService {
       this.mailService.sendProposalApprovalStatusUpdate(proposal, proposal.status)
 
       this.logActivity(tutorId, ActionType.PROPOSAL_ACCEPTED, proposal.created_by.id, undefined, proposalId )
+
+      let project = new ProjectEntity()
+      project.title = proposal.title;
+      project.description = proposal.description;
+      project.expectedDeliverable = proposal.expectedDeliverable;
+      project.tags = proposal.tags;
+      project.status = ProjectStatus.ASSIGNED
+      project.tutor = proposal.tutor
+      project.resources = proposal.resources;
+      project.prerequisiteModules = proposal.modules;
+
+      const savedProject = await this.projectRepository.save(project)
+
+      const student = proposal.created_by
+      student.assignedProject = savedProject
+      this.studentProfileRepository.save(student)
+
       return {
         status: 201,
         message: 'successful',

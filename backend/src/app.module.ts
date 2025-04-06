@@ -22,6 +22,8 @@ import { TutorDashboardService } from './services/TutorDashboardService.service'
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { ActivityEntity } from './entities/Activities.entity';
 import { AdminInputRequest } from './entities/AdminInputRequest.enity';
+import { AdminDashboardController } from './controllers/AdminDashboardController.controller';
+import { AdminDashboardService } from './services/AdminDashboardService.service';
 
 @Module({
   imports: [
@@ -57,8 +59,9 @@ import { AdminInputRequest } from './entities/AdminInputRequest.enity';
     ProposalController,
     AppController,
     TutorDashboardController,
+    AdminDashboardController
   ],
-  providers: [ProjectService, ProposalService, TutorDashboardService],
+  providers: [ProjectService, ProposalService, TutorDashboardService, AdminDashboardService],
   // exports:[ProposalService]
 })
 export class AppModule {}

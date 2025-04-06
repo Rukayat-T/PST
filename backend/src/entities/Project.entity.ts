@@ -14,6 +14,7 @@ import { StudentProfile } from './StudentProfile.entity';
 import { ChosenProject } from './ChosenProject';
 import { ModulesEntity } from './Modules';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
+import { AdminInputRequest } from './AdminInputRequest.enity';
 
 @Entity('project_entity')
 export class ProjectEntity {
@@ -70,4 +71,7 @@ export class ProjectEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => AdminInputRequest, (conflict) => conflict.project)
+  conflicts: ChosenProject[];
 }
