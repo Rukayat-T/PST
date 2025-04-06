@@ -559,10 +559,19 @@ Otherwise, proceed with saving the chosen project.
   // get project assigned to students by student id (not done)
   async getProjectAssignedToStudent(id: number): Promise<BaseResponse> {
     try {
+      const student = await this.studentProfileRepository.findOne({
+        where: {
+          id: id,
+        },
+        relations: ['assignedProject']
+      })
+
+      const project = student.assignedProject
+
       return {
         status: 201,
         message: 'successful',
-        response: '',
+        response: project,
       };
     } catch (error) {
       return {

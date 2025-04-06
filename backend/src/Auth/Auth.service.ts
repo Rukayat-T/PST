@@ -14,6 +14,7 @@ import { LoginDto } from 'src/DTOs/LoginDto.dto';
 import { response } from 'express';
 import { ModulesEntity } from 'src/entities/Modules';
 import { Role } from 'src/entities/role.enum';
+import { ChosenProject } from 'src/entities/ChosenProject';
 
 @Injectable()
 export class AuthService {
@@ -456,5 +457,68 @@ export class AuthService {
     }
   }
 
+  async getAllStudentFilter(filters: any): Promise<BaseResponse> {
+    const {
+      search,
+      page = 1,
+      limit = 15,
+    } = filters;
 
+    try {
+      const query = this.studentProfileRepository
+      .createQueryBuilder("student")
+      .leftJoinAndSelect("student.user", "user")
+      .leftJoinAndSelect("student.assignedProject", "assignedProject")
+
+      if (search != undefined) {
+        query.andWhere('user.name ILIKE :search OR user.email ILIKE :search', {
+          search: `%${search}%`,
+        });
+      }
+
+      const offset = (page - 1) * limit;
+      query.offset(offset).limit(limit);
+
+      const students= await query.getRawMany();
+      console.log(students)
+
+      const totalCount = await query.getCount();
+      const totalPages = Math.ceil(Number(totalCount) / limit);
+
+      // const [sql, parameters] = query.getQueryAndParameters();
+    // console.log('Generated SQL Query:', sql);
+    // console.log('Parameters:', parameters);
+
+      const result = students.map((student) => ({
+        id: student.id,
+        name: student.user_name,
+        email: student.user_email,
+        hasAssignedProject: !!student.assignedProject,
+        assignedProjectTitle: student.assignedProject?.title || null,
+        yearOfStudy: student.yearOfStudy,
+        department: student.department,
+      }));
+
+      return {
+        status: 201,
+        message: 'successful',
+        response: {
+          students: result,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            limit,
+          },
+        },
+      };
+    } catch (error) {
+      console.log(error)
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
 }

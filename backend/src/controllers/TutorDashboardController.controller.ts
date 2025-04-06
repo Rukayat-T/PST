@@ -46,4 +46,9 @@ export class TutorDashboardController {
   {
     return await this.tutorDashboardService.getRecentActivities(tutorId);
   }
+
+  @Get('application_count-by-week')
+  async getApplicationsCountByWeek(): Promise<BaseResponse> {
+    return this.tutorDashboardService.getApplicationsCountByWeek();
+  }
 }

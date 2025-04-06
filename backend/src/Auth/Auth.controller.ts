@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AuthService } from './Auth.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { CreateUserDto } from 'src/DTOs/CreateUserDto.dto';
 import { CreateStudentProfileDto } from 'src/DTOs/CreateStudentProfile.dto';
@@ -83,4 +83,36 @@ export class AuthController {
   async getAllAdmins(): Promise<BaseResponse> {
     return await this.authService.getAllAdmins();
   }
+
+   @Get('getAllStudents')
+    @ApiQuery({
+      name: 'search',
+      required: false,
+      type: String,
+      description: 'Search keyword for project title or description',
+    })
+    @ApiQuery({
+      name: 'page',
+      required: false,
+      type: Number,
+      description: 'Page number for pagination',
+    })
+    @ApiQuery({
+      name: 'limit',
+      required: false,
+      type: Number,
+      description: 'Number of projects per page (limit for pagination)',
+    })
+    async getAllStudents(
+      @Query('search') search: string,
+      @Query('page') page: number = 1, // Default to page 1 if not provided
+      @Query('limit') limit: number = 15, // Default to 15 results per page if not provided
+    ): Promise<BaseResponse> {
+      const filters = {
+        search,
+        page,
+        limit,
+      };
+      return await this.authService.getAllStudentFilter(filters);
+    }
 }

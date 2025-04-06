@@ -17,7 +17,7 @@ import { addDays } from 'date-fns';
 import { ActivityEntity } from 'src/entities/Activities.entity';
 
 @Injectable()
-export class TutorDashboardService {
+export class AdminDashboardService {
   constructor(
     @InjectRepository(ProjectEntity)
     private readonly projectRepository: Repository<ProjectEntity>,
@@ -53,20 +53,20 @@ export class TutorDashboardService {
     }
   }
  
-  async getMetrics(id: number): Promise<BaseResponse> {
+  async getMetrics(tutorId: number): Promise<BaseResponse> {
     try {
-      const tutor = (await this.authService.getTutor(id)).response;
+      const tutor = (await this.authService.getTutor(tutorId)).response;
       if (!tutor) {
         return {
           status: 404,
-          message: 'tutor not found',
+          message: 'admin not found',
         };
       }
 
       const actProjects = await this.projectRepository.find({
         where: {
           status: ProjectStatus.ACTIVE,
-          tutor: { id },
+          tutor: { id: tutorId },
         },
         relations: ['tutor', 'chosenProjects'],
       });
@@ -77,21 +77,35 @@ export class TutorDashboardService {
       }
 
       const proposals = await this.proposalRepository.find({
-        where: { tutor: { id: id } },
+        where: { tutor: { id: tutorId } },
       });
 
-      const allAssignedProjects = await this.projectRepository.find({
-        where: {
-          status: ProjectStatus.ASSIGNED,
-          tutor: { id },
-        },
-        relations: ['tutor'],
-      });
+    //   const allUnassignedStudents = await this.studentProfileRepository.find({
+    //     where: {
+    //       assignedProject: {id: null}, 
+    //     },
+    //     relations:['assignedProject']
+    //   });
+
+      const allUnassignedStudents = await this.studentProfileRepository
+  .createQueryBuilder('student')
+  .leftJoinAndSelect('student.assignedProject', 'assignedProject')
+  .where('student.assignedProject IS NULL')
+  .getMany();
+
+
+    //   const allAssignedProjects = await this.projectRepository.find({
+    //     where: {
+    //       status: ProjectStatus.ASSIGNED,
+    //       tutor: { id: tutorId },
+    //     },
+    //     relations: ['tutor'],
+    //   });
 
       const activeProjects = actProjects.length;
       const studentApplicatons = countApps;
       const projectProposals = proposals.length;
-      const assignedProjects = allAssignedProjects.length;
+    //   const assignedProjects = allAssignedProjects.length;
 
       return {
         status: 200,
@@ -100,7 +114,7 @@ export class TutorDashboardService {
           activeProjects: activeProjects,
           studentApplications: studentApplicatons,
           projectProposals: projectProposals,
-          assignedProjects: assignedProjects,
+          unassignedStudents: allUnassignedStudents.length,
         },
       };
     } catch (error) {
@@ -116,9 +130,9 @@ export class TutorDashboardService {
   async getRecentActivities(tutorId: number): Promise<BaseResponse> {
     try {
       const activities = await this.activityRepository.find({
-        where: {
-          tutor : {id: tutorId}
-        },
+        // where: {
+        //   tutor : {id: tutorId}
+        // },
         relations : ['project', 'proposal', 'student'],
         order: {createdAt: 'DESC'},
         take: 5
@@ -140,14 +154,14 @@ export class TutorDashboardService {
   }
 
   // get popular projects
-  async getPopularProjects(id: number): Promise<BaseResponse> {
+  async getPopularProjects(): Promise<BaseResponse> {
     try {
       const oneWeekAgo = addDays(new Date(), -7); // Date 7 days ago
 
       const projects = await this.projectRepository.find({
         where: {
           //   status: ProjectStatus.ACTIVE,
-          tutor: { id },
+        //   tutor: { id },
         },
         relations: ['chosenProjects'],
       });
@@ -238,17 +252,13 @@ export class TutorDashboardService {
     try {
       const results = await this.chosenProjectRepository
         .createQueryBuilder('application')
-        .leftJoinAndSelect('application.project', 'project') 
-        .leftJoinAndSelect('project.tutor', 'tutor')
         .select("DATE_TRUNC('week', application.createdAt)", 'week') // group by week
         .addSelect('COUNT(*)', 'count')
-        .groupBy("tutor.id")  
         .groupBy("week")
         .orderBy('week', 'ASC')
         .getRawMany();
   
       const formatted = results.map((row) => ({
-        tutorId: row.tutorId, 
         week: row.week,
         count: parseInt(row.count, 10),
       }));
@@ -266,5 +276,42 @@ export class TutorDashboardService {
       };
     }
   }
+  
+
+  async getAllocationDistribution(): Promise<BaseResponse> {
+    try {
+        
+        const allUnassignedStudents = await this.studentProfileRepository
+  .createQueryBuilder('student')
+  .leftJoinAndSelect('student.assignedProject', 'assignedProject')
+  .where('student.assignedProject IS NULL')
+  .getMany();
+  const assignedStudents = await this.studentProfileRepository
+  .createQueryBuilder('student')
+  .leftJoinAndSelect('student.assignedProject', 'assignedProject')
+  .where('student.assignedProject IS NOT NULL')
+  .getMany();
+
+  const unassignedCount = allUnassignedStudents.length;
+  const assignedCount = assignedStudents.length;
+  const total = unassignedCount + assignedCount
+      return {
+        status: 201,
+        message: 'successful',
+        response: {
+            unassignedCount,
+            assignedCount,
+            total
+        },
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
   
 }
