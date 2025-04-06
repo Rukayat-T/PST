@@ -289,38 +289,40 @@ export class ProjectService {
     const { search, sortBy, sortOrder, page = 1, limit = 15 } = filters;
     try {
       const query = this.projectRepository
-        .createQueryBuilder('project')
-        .leftJoin('project.chosenProjects', 'chosenProjects')
-        .leftJoin('project.tutor', 'tutor')
-        .leftJoin('tutor.user', 'user')
-        .leftJoin('project.prerequisiteModules', 'module')
-        .select([
-          'project.id',
-          'project.title',
-          'project.description',
-          'project.expectedDeliverable',
-          'project.tags',
-          'project.status',
-          'project.resources',
-          'project.createdAt',
-          'project.updatedAt',
-          'tutor.id AS tutor_id',
-          'ARRAY_AGG(DISTINCT module.id) AS module_ids',
-          'ARRAY_AGG(DISTINCT module.name) AS module_names',
-        ])
-        .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
-        .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
-        .where('tutor.id = :id', { id }) // Filter by tutor ID
-        .groupBy('project.id')
-        .addGroupBy('tutor.id')
-        .addGroupBy('user.id')
-        .addGroupBy('project.title')
-        .addGroupBy('project.description')
-        .addGroupBy('project.expectedDeliverable')
-        .addGroupBy('project.tags')
-        .addGroupBy('project.resources')
-        .addGroupBy('project.createdAt')
-        .addGroupBy('project.updatedAt');
+      .createQueryBuilder('project')
+      .leftJoin('project.chosenProjects', 'chosenProjects')
+      .leftJoin('project.tutor', 'tutor')
+      .leftJoin('tutor.user', 'user')
+      .leftJoin('project.prerequisiteModules', 'module')
+      .leftJoin('project.conflicts', 'conflict') // Join the conflicts relationship
+      .select([
+        'project.id',
+        'project.title',
+        'project.description',
+        'project.expectedDeliverable',
+        'project.tags',
+        'project.status',
+        'project.resources',
+        'project.createdAt',
+        'project.updatedAt',
+        'tutor.id AS tutor_id',
+        'ARRAY_AGG(DISTINCT module.id) AS module_ids',
+        'ARRAY_AGG(DISTINCT module.name) AS module_names',
+      ])
+      .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
+      .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
+      .addSelect('COUNT(conflict.id)', 'conflict_count') // Alias the count of conflicts for the project
+      .where('tutor.id = :id', { id }) // Filter by tutor ID
+      .groupBy('project.id')
+      .addGroupBy('tutor.id')
+      .addGroupBy('user.id')
+      .addGroupBy('project.title')
+      .addGroupBy('project.description')
+      .addGroupBy('project.expectedDeliverable')
+      .addGroupBy('project.tags')
+      .addGroupBy('project.resources')
+      .addGroupBy('project.createdAt')
+      .addGroupBy('project.updatedAt');
 
       // Search by project title or tags
       if (search) {
@@ -363,11 +365,16 @@ export class ProjectService {
       // const totalCount = projects.length; // Get the total count of projects
       const totalPages = Math.ceil(Number(totalCount) / limit);
 
+      const formattedProjects = projects.map((project) => ({
+        ...project,
+        hasConflict: project.conflict_count > 0, // Set conflict flag based on count
+      }));
+
       return {
         status: 201,
         message: 'Projects fetched successfully',
         response: {
-          projects,
+          formattedProjects,
           pagination: {
             currentPage: page,
             totalPages,
