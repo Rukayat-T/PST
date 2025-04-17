@@ -128,7 +128,6 @@ export class ProposalService {
     proposalId: number,
   ): Promise<BaseResponse> {
     try {
-      console.log('yopo');
       const tutor = (await this.authService.getTutor(tutorId)).response;
       console.log(tutor);
       if (!tutor) {
@@ -138,7 +137,13 @@ export class ProposalService {
         };
       }
       const proposal = await this.proposalRepository.findOne({
-        where: { id: proposalId, tutor: { id: tutorId } },
+        where: 
+        { id: proposalId, 
+          tutor: { id: tutorId } 
+        },
+        relations:{
+          created_by: true
+        }
       });
       if (!proposal) {
         return {
@@ -197,7 +202,13 @@ export class ProposalService {
         };
       }
       const proposal = await this.proposalRepository.findOne({
-        where: { id: proposalId, tutor: { id: tutorId } },
+        where: 
+        { id: proposalId, 
+          tutor: { id: tutorId } 
+        },
+        relations:{
+          created_by: true
+        }
       });
       if (!proposal) {
         return {
@@ -216,6 +227,7 @@ export class ProposalService {
         response: proposal,
       };
     } catch (error) {
+      console.log(error)
       return {
         status: 400,
         message: 'Bad Request',
