@@ -294,7 +294,7 @@ export class ProjectService {
       .leftJoin('project.tutor', 'tutor')
       .leftJoin('tutor.user', 'user')
       .leftJoin('project.prerequisiteModules', 'module')
-      .leftJoin('project.conflicts', 'conflict') // Join the conflicts relationship
+      .leftJoin('project.conflict', 'conflict') // Join the conflicts relationship
       .select([
         'project.id',
         'project.title',
@@ -385,6 +385,7 @@ export class ProjectService {
         },
       };
     } catch (error) {
+      console.log(error)
       return {
         status: 400,
         message: 'Bad Request',
