@@ -310,7 +310,7 @@ export class ProjectService {
         'ARRAY_AGG(DISTINCT module.name) AS module_names',
       ])
       .addSelect('MAX(user.name)', 'tutorname') // Alias the aggregated tutor name
-      .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
+      .addSelect('COUNT(DISTINCT chosenProjects.id)', 'popularity') // Alias the count of chosen projects
       .addSelect('COUNT(conflict.id)', 'conflict_count') // Alias the count of conflicts for the project
       .where('tutor.id = :id', { id }) // Filter by tutor ID
       // .where('chosenProject.status')
