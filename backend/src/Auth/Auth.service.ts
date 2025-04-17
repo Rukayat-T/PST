@@ -490,7 +490,7 @@ export class AuthService {
     // console.log('Parameters:', parameters);
 
       const result = students.map((student) => ({
-        id: student.id,
+        id: student.student_id,
         name: student.user_name,
         email: student.user_email,
         hasAssignedProject: !!student.assignedProject,
