@@ -75,4 +75,7 @@ export class ProjectEntity {
 
   @OneToOne(() => AdminInputRequest, (request) => request.project)
   conflict: AdminInputRequest;
+
+  @Column({nullable: true})
+  contactTutor: string;
 }

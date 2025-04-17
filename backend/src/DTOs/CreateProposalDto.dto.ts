@@ -73,4 +73,20 @@ export class CreateProposalDto {
     type: Number,
   })
   moduleIds: number[];
+
+  @IsString()
+  @ApiProperty({
+    example: 'I said what I said',
+    description: 'student\'s statement of interest',
+    required: false,
+  })
+  statementOfInterest: string
+
+  // @IsNumber()
+  // @ApiProperty({
+  //   example: 0,
+  //   description: '0 if student has not spoken with supervisor, 1 if they have',
+  //   required: false
+  // })
+  // hasCommunicated: number
 }
