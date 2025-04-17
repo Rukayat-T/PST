@@ -480,7 +480,7 @@ export class AuthService {
       query.offset(offset).limit(limit);
 
       const students= await query.getRawMany();
-      console.log(students)
+      // console.log(students)
 
       const totalCount = await query.getCount();
       const totalPages = Math.ceil(Number(totalCount) / limit);
@@ -490,7 +490,7 @@ export class AuthService {
     // console.log('Parameters:', parameters);
 
       const result = students.map((student) => ({
-        id: student.id,
+        id: student.student_id,
         name: student.user_name,
         email: student.user_email,
         hasAssignedProject: !!student.assignedProject,
