@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { CreateProjectDto } from 'src/DTOs/CreateProject.dto';
 import { Role } from 'src/entities/role.enum';
@@ -23,6 +23,7 @@ import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { UpdateChoiceStatusDto } from 'src/DTOs/UpdateChoiceStatusDto.dto';
 import { RateStatement } from 'src/DTOs/RateSTatementDto.dto';
 import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
+import { AdminCommentDto } from 'src/DTOs/AdminCommentDto';
 
 @ApiBearerAuth()
 @ApiTags('Projects Controller')
@@ -320,9 +321,10 @@ export class ProjectController {
     return this.projectService.createAdminInputRequest(dto);
   }
 
+
   @Put("conflicts/addAdminComments/:requestId")
-  async addAdminComments(@Param('requestId') requestId: number, @Body() comment: string): Promise<BaseResponse>{
-    return this.projectService.addAdminComments(requestId, comment)
+  async addAdminComments(@Param('requestId') requestId: number, @Body() dto: AdminCommentDto): Promise<BaseResponse>{
+    return this.projectService.addAdminComments(requestId, dto.comment)
   }
 
   @Get("conflicts/getConflict/:conflictId")
