@@ -480,7 +480,7 @@ export class AuthService {
       query.offset(offset).limit(limit);
 
       const students= await query.getRawMany();
-      console.log(students)
+      // console.log(students)
 
       const totalCount = await query.getCount();
       const totalPages = Math.ceil(Number(totalCount) / limit);
