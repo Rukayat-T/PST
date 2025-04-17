@@ -313,6 +313,7 @@ export class ProjectService {
       .addSelect('COUNT(chosenProjects.id)', 'popularity') // Alias the count of chosen projects
       .addSelect('COUNT(conflict.id)', 'conflict_count') // Alias the count of conflicts for the project
       .where('tutor.id = :id', { id }) // Filter by tutor ID
+      // .where('chosenProject.status')
       .groupBy('project.id')
       .addGroupBy('tutor.id')
       .addGroupBy('user.id')
@@ -1221,6 +1222,38 @@ async getConflict(id: number): Promise<BaseResponse> {
       status: 201,
       message: 'successful',
       response: {conflict, applications: projectApps}
+    };
+
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
+async getConflictCommentsByProjectId(id: number): Promise<BaseResponse> {
+  try {
+    const project = await this.projectRepository.findOne({
+      where: { id },
+      relations: {
+        conflict: true,
+      },
+    });
+    if (!project) {
+      return {
+        status: 404,
+        message: 'Project not found, enter valid id',
+      };
+    }
+    const adminComment = project.conflict.adminComments
+    const tutorComment = project.conflict.tutorComments
+  
+    return {
+      status: 201,
+      message: 'successful',
+      response: {adminComment, tutorComment}
     };
 
   } catch (error) {
