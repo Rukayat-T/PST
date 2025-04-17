@@ -44,4 +44,7 @@ export class TutorProfile {
 
   @OneToMany(() => AdminInputRequest, (conflict) => conflict.admin)
   adminConflicts: AdminInputRequest[];
+
+  @Column({nullable : true})
+  contactLink: string;
 }

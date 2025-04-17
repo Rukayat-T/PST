@@ -67,6 +67,7 @@ export class ProjectService {
       project.expectedDeliverable = dto.expectedDeliverable;
       project.tags = dto.tags;
       project.status = dto.status
+      
       if (dto?.resources) {
         project.resources = dto.resources;
       }
@@ -88,6 +89,7 @@ export class ProjectService {
           message: 'tutor not found, enter a valid id',
         };
       } else {
+        project.contactTutor = tutor.contactLink
         project.tutor = tutor;
         const newProject = await this.projectRepository.save(project);
         this.logActivity(ActionType.PROJECT_CREATED, dto.tutorId, undefined, newProject.id, undefined)

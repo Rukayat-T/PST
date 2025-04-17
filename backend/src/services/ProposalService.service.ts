@@ -42,6 +42,7 @@ export class ProposalService {
       let proposal = new ProposalEntity();
 
       proposal.description = dto.description;
+      proposal.statementOfInterest = dto.statementOfInterest
       proposal.expectedDeliverable = dto.expectedDeliverable;
       proposal.resources = dto.resources;
       proposal.status = ProposalStatus.PENDING;

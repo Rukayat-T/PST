@@ -58,4 +58,15 @@ export class ProposalEntity {
     cascade: true,
   })
   modules: ModulesEntity[];
+
+  @Column({
+    nullable: true,
+  })
+  statementOfInterest: string
+
+  @Column({
+    nullable: true,
+    default: 0
+  })
+  hasCommunicated: number
 }
