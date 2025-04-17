@@ -2,10 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,7 +26,8 @@ export class AdminInputRequest {
   @ManyToOne(() => TutorProfile, { nullable: true, onDelete: 'CASCADE' })
   admin: TutorProfile
 
-  @ManyToOne(() => ProjectEntity, { nullable: true, onDelete: 'SET NULL' })
+  @OneToOne(() => ProjectEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
   project?: ProjectEntity;
 
   @ManyToOne(() => ProposalEntity, { nullable: true, onDelete: 'SET NULL' })

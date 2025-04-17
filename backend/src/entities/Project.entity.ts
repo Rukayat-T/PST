@@ -6,6 +6,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -72,6 +73,6 @@ export class ProjectEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => AdminInputRequest, (conflict) => conflict.project)
-  conflicts: ChosenProject[];
+  @OneToOne(() => AdminInputRequest, (request) => request.project)
+  conflict: AdminInputRequest;
 }

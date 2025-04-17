@@ -335,5 +335,10 @@ export class ProjectController {
     return await this.projectService.getAllConflicts(adminId);
   }
 
+  @Get("conflicts/getConflictCommentByProject/:projectId")
+  async getConflictComments(@Param('projectId') projectId: number): Promise<BaseResponse> {
+    return await this.projectService.getConflictCommentsByProjectId(projectId);
+  }
+
   
 }
