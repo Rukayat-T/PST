@@ -188,6 +188,41 @@ export class ProposalService {
     }
   }
 
+  async proposalStatusUpdate(
+    proposalId: number, status: ProposalStatus
+  ): Promise<BaseResponse> {
+    try {
+      
+      const proposal = await this.proposalRepository.findOne({
+        where: 
+        { id: proposalId, 
+        },
+        relations:{
+          created_by: true
+        }
+      });
+      if (!proposal) {
+        return {
+          status: 404,
+          message: 'proposal not found',
+        };
+      }
+      proposal.status = status;
+      await this.proposalRepository.save(proposal);
+      return {
+        status: 201,
+        message: 'successful',
+        response: proposal,
+      };
+    } catch (error) {
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+
   // reject proposal
   async rejectProposal(
     tutorId: number,
