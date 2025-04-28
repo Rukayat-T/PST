@@ -19,6 +19,7 @@ import { Brackets, Repository } from 'typeorm';
 import { RateStatement } from '../DTOs/RateSTatementDto.dto';
 import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
 import { AdminInputRequest } from 'src/entities/AdminInputRequest.enity';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
@@ -1061,72 +1062,94 @@ async getStudentsAppsForProjectRanked(id: number): Promise<BaseResponse> {
   }
 }
 
-async assignProjectToStudent(studentId: number, projectId: number) : Promise<BaseResponse>{
-    try {
-      const student = await this.studentProfileRepository.findOne({
-        where: { id: studentId },
-        // relations: [
-        //   'chosenProjects',
-        //   'chosenProjects.project'
-        // ],
-      });
-      if (!student) {
-        return {
-          status: 404,
-          message: 'student does not exist',
-        };
-      }
-
-      const project = await this.projectRepository.findOne({
-        where: { id: projectId },
-        relations: {
-          tutor: true,
-          chosenByStudents: true,
-        },
-      });
-      if (!project) {
-        return {
-          status: 404,
-          message: 'Project not found, enter valid id',
-        };
-      }
-
-      const app = await this.chosenProjectRepository.findOne({
-        where: {
-          project: {id: projectId},
-          student: {id: studentId},
-        }
-      })
-
-      //update application entity
-      app.status = ChoiceStatus.ALLOCATED
-      await this.chosenProjectRepository.save(app)
-      await this.mailService.sendProjectApplicationStatusUpdateToStudent(project, student, app.status)
-
-      //update project entity
-      project.status = ProjectStatus.ASSIGNED
-      const assignedStudents = [student]
-      project.assignedStudents = assignedStudents
-      await this.projectRepository.save(project)
-
-      //update student entity
-      student.assignedProject = project
-      await this.studentProfileRepository.save(student)
-
-      //change the other students' application status to not_assigned?
-  
+async assignProjectToStudent(studentId: number, projectId: number): Promise<BaseResponse> {
+  try {
+    // Step 1: Find student
+    const student = await this.studentProfileRepository.findOne({
+      where: { id: studentId },
+    });
+    if (!student) {
       return {
-        status: 201,
-        message: 'successfully assigned',
-      };
-    } catch (error) {
-      return {
-        status: 400,
-        message: 'Bad Request',
-        response: error,
+        status: 404,
+        message: 'student does not exist',
       };
     }
+
+    // Step 2: Find project
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+      relations: {
+        tutor: true,
+        chosenByStudents: true,
+      },
+    });
+    if (!project) {
+      return {
+        status: 404,
+        message: 'Project not found, enter valid id',
+      };
+    }
+
+    // Step 3: Find student's application for this project
+    const app = await this.chosenProjectRepository.findOne({
+      where: {
+        project: { id: projectId },
+        student: { id: studentId },
+      },
+    });
+
+    if (!app) {
+      return {
+        status: 404,
+        message: 'Application not found for this student and project',
+      };
+    }
+
+    // Step 4: Update assigned student's application to ALLOCATED
+    app.status = ChoiceStatus.ALLOCATED;
+    await this.chosenProjectRepository.save(app);
+
+    // Step 5: Update project status
+    project.status = ProjectStatus.ASSIGNED;
+    project.assignedStudents = [student];
+    await this.projectRepository.save(project);
+
+    // Step 6: Update student entity
+    student.assignedProject = project;
+    await this.studentProfileRepository.save(student);
+
+    // Step 7: Update OTHER students' applications to NOT_ASSIGNED
+    const otherApplications = await this.chosenProjectRepository.find({
+      where: {
+        project: { id: projectId },
+        student: { id: Not(studentId) },
+      },
+    });
+
+    if (otherApplications.length > 0) {
+      for (let otherApp of otherApplications) {
+        otherApp.status = ChoiceStatus.NOT_SELECTED;
+      }
+      await this.chosenProjectRepository.save(otherApplications);
+    }
+
+    // Step 8: Send emails
+    await this.mailService.sendProjectApplicationStatusUpdateToStudent(project, student, app.status);
+
+    return {
+      status: 201,
+      message: 'successfully assigned',
+    };
+
+  } catch (error) {
+    console.error(error);
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
   }
+}
 
     async logActivity(
       actionType: ActionType,
