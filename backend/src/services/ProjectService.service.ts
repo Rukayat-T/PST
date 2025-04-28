@@ -658,7 +658,6 @@ export class ProjectService {
     }
   }
   
-  
   // get projects chosen by student id
   async getStudentChoices(id: number): Promise<BaseResponse> {
     try {
@@ -1069,10 +1068,7 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
       where: { id: studentId },
     });
     if (!student) {
-      return {
-        status: 404,
-        message: 'student does not exist',
-      };
+      return { status: 404, message: 'student does not exist' };
     }
 
     // Step 2: Find project
@@ -1084,10 +1080,7 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
       },
     });
     if (!project) {
-      return {
-        status: 404,
-        message: 'Project not found, enter valid id',
-      };
+      return { status: 404, message: 'Project not found, enter valid id' };
     }
 
     // Step 3: Find student's application for this project
@@ -1099,10 +1092,7 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
     });
 
     if (!app) {
-      return {
-        status: 404,
-        message: 'Application not found for this student and project',
-      };
+      return { status: 404, message: 'Application not found for this student and project' };
     }
 
     // Step 4: Update assigned student's application to ALLOCATED
@@ -1118,7 +1108,7 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
     student.assignedProject = project;
     await this.studentProfileRepository.save(student);
 
-    // Step 7: Update OTHER students' applications to NOT_ASSIGNED
+    // Step 7: Update OTHER students' applications for this project to NOT_SELECTED
     const otherApplications = await this.chosenProjectRepository.find({
       where: {
         project: { id: projectId },
@@ -1133,8 +1123,27 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
       await this.chosenProjectRepository.save(otherApplications);
     }
 
-    // Step 8: Send emails
-    await this.mailService.sendProjectApplicationStatusUpdateToStudent(project, student, app.status);
+    // Step 8: Update THIS student's applications for OTHER projects to NOT_SELECTED
+    const studentOtherApplications = await this.chosenProjectRepository.find({
+      where: {
+        student: { id: studentId },
+        project: { id: Not(projectId) },
+      },
+    });
+
+    if (studentOtherApplications.length > 0) {
+      for (let otherApp of studentOtherApplications) {
+        otherApp.status = ChoiceStatus.NOT_SELECTED;
+      }
+      await this.chosenProjectRepository.save(studentOtherApplications);
+    }
+
+    // Step 9: Send email to the assigned student
+    await this.mailService.sendProjectApplicationStatusUpdateToStudent(
+      project,
+      student,
+      app.status
+    );
 
     return {
       status: 201,
@@ -1150,6 +1159,7 @@ async assignProjectToStudent(studentId: number, projectId: number): Promise<Base
     };
   }
 }
+
 
     async logActivity(
       actionType: ActionType,
