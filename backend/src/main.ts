@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   const config = new DocumentBuilder()
-    .setTitle('Project selection tool Api documentation')
+    .setTitle('Capstone Connect API documentation')
     .setDescription('')
     .setVersion('1.0')
     .addBearerAuth()
