@@ -58,7 +58,7 @@ export class MailService {
         proposalName: proposal.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Tutor/proposals/${proposal.id}/view_proposal`
+        reviewLink: `http://localhost:3000/login?redirect=/Tutor/proposals/${proposal.id}/view_proposal`
       },
     })
   }
@@ -82,7 +82,7 @@ export class MailService {
         proposalName: proposal.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Proposals`
+        reviewLink: `http://localhost:3000/?redirect=/Proposals`
       },
     })
   }
@@ -106,7 +106,7 @@ export class MailService {
         proposalName: proposal.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Proposals`
+        reviewLink: `http://localhost:3000/login?redirect=/Proposals`
       },
     })
   }
@@ -131,7 +131,7 @@ export class MailService {
         description: truncatedDescription,
         studentName: student.user.name,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Tutor/projects/${project.id}/view_students`
+        reviewLink: `http://localhost:3000/login?redirect=/Tutor/projects/${project.id}/view_students`
       },
     })
   }
@@ -156,7 +156,7 @@ export class MailService {
         projectName: project.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Choices`
+        reviewLink: `http://localhost:3000/login?redirect=/Choices`
       },
     })
   }
@@ -181,7 +181,7 @@ export class MailService {
         projectName: project.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Choices`
+        reviewLink: `http://localhost:3000/login?redirect=/Choices`
       },
     })
   }
@@ -205,7 +205,7 @@ export class MailService {
         proposalName: proposal.title,
         description: truncatedDescription,
         status,
-        reviewLink: `http://localhost:3000/Login?redirect=/Tutor/proposals/${proposal.id}/view_proposal`
+        reviewLink: `http://localhost:3000/login?redirect=/Tutor/proposals/${proposal.id}/view_proposal`
       },
     })
   }
