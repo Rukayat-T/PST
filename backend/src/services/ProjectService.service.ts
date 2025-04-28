@@ -411,51 +411,30 @@ export class ProjectService {
     
   }
 
-  /*
-  Check if the student already has a project with the same rank.
-  If yes, push it down by 1.
-  If a project is already at rank 3, push it to rank 4, and so on.
-  Ensure no project exceeds rank 5.
-  */
- /*
- Steps to Implement Mandatory Checking
-Fetch the student's completed modules.
-Fetch the project's prerequisite modules.
-Check if the student has completed all required prerequisites.
-If not, reject the application immediately.
-Otherwise, proceed with saving the chosen project.
- */
-  // choose project
-  async chooseProject(
+  async chooseProjectold(
     id: number,
     dto: ChooseProjectDto,
   ): Promise<BaseResponse> {
     try {
-      //check for student
+      // Check for student
       const student = await this.studentProfileRepository.findOne({
         where: { id: id },
-        relations : ['previousModules']
+        relations: ['previousModules'],
       });
       if (!student) {
-        return {
-          status: 404,
-          message: 'student not found',
-        };
+        return { status: 404, message: 'student not found' };
       }
-
-      // fetch project with it's prerequisite modules
+  
+      // Fetch project with its prerequisite modules
       const project = await this.projectRepository.findOne({
-        where: { id: dto.projectId},
-        relations: ['prerequisiteModules']
-      })
+        where: { id: dto.projectId },
+        relations: ['prerequisiteModules'],
+      });
       if (!project) {
-        return {
-          status: 404,
-          message: 'project not found',
-        };
+        return { status: 404, message: 'project not found' };
       }
-
-      //check if project previously chosen
+  
+      // Check if project previously chosen
       const chosenProjectDb = await this.chosenProjectRepository.findOne({
         where: {
           project: { id: dto.projectId },
@@ -463,68 +442,82 @@ Otherwise, proceed with saving the chosen project.
         },
       });
       if (chosenProjectDb) {
-        return {
-          status: 400,
-          message: 'student has already chosen this project',
-        };
-      } 
-    
+        return { status: 400, message: 'student has already chosen this project' };
+      }
+  
       // Find all projects the student has already chosen
       let chosenProjects = await this.chosenProjectRepository.find({
         where: { student: { id: id } },
-        order: { rank: 'ASC' }, // Ensure ordered by rank
+        order: { rank: 'ASC' },
       });
+  
+      // If already 5 choices made
       if (chosenProjects.length >= 5) {
         return { status: 400, message: 'You cannot choose more than 5 projects' };
       }
-
-      // Check if the student already has a project at this rank
-      let projectAtRank = chosenProjects.find((p) => p.rank === dto.rank);
-      if (projectAtRank) {
-        // Shift ranks for existing projects to make space
-        for (let i = chosenProjects.length - 1; i >= 0; i--) {
-          if (chosenProjects[i].rank >= dto.rank && chosenProjects[i].rank < 5) {
-            chosenProjects[i].rank += 1;
+  
+      // Shift ranks for existing projects to make space
+      for (let i = chosenProjects.length - 1; i >= 0; i--) {
+        if (chosenProjects[i].rank >= dto.rank) {
+          chosenProjects[i].rank += 1;
+          if (chosenProjects[i].rank > 5) {
+            // Delete project if it overflows beyond 5
+            await this.chosenProjectRepository.remove(chosenProjects[i]);
+          } else {
             await this.chosenProjectRepository.save(chosenProjects[i]);
           }
         }
       }
-
-      // Create and save the new choice
-      let newChoice = new ChosenProject();
-      newChoice.project = await this.projectRepository.findOne({
-        where: { id: dto.projectId },
-      });
+  
+      // Create and save the new project choice
+      const newChoice = new ChosenProject();
+      newChoice.project = project;
       newChoice.student = student;
       newChoice.rank = dto.rank;
-      newChoice.statementOfInterest = dto.statementOfInterest
-      if (dto.statementOfInterest === "") newChoice.statementOfInterestScore = 0 
-      newChoice.hasCommunicated = dto.hasCommunicated
-
-      // Mandatory check: Ensure the student has completed all prerequisite modules
+      newChoice.statementOfInterest = dto.statementOfInterest;
+      newChoice.statementOfInterestScore = dto.statementOfInterest === "" ? 0 : undefined;
+      newChoice.hasCommunicated = dto.hasCommunicated;
+  
+      // Check prerequisites
       const studentModules = new Set(student.previousModules.map((mod) => mod.id));
-      const missingModules = project.prerequisiteModules.filter((mod) => !studentModules.has(mod.id));
- 
+      const missingModules = project.prerequisiteModules.filter(
+        (mod) => !studentModules.has(mod.id),
+      );
+  
       if (missingModules.length > 0) {
-        newChoice.status = ChoiceStatus.NOT_SELECTED
+        newChoice.status = ChoiceStatus.NOT_SELECTED;
+      } else {
+        newChoice.status = ChoiceStatus.APPLIED;
       }
-      else{
-        newChoice.status = ChoiceStatus.APPLIED
-      }
-
+  
       const chosenProject = await this.chosenProjectRepository.save(newChoice);
-
-      this.mailService.sendProjectApplicationMailToTutor(chosenProject.project, student, chosenProject.status)
-      this.mailService.sendProjectApplicationMailToStudent(chosenProject.project, student, chosenProject.status)
-
-      this.logActivity( ActionType.APPLIED_FOR_PROJECT, chosenProject.project.tutor.id, id, dto.projectId)
-
+  
+      // Send notification emails
+      await this.mailService.sendProjectApplicationMailToTutor(
+        chosenProject.project,
+        student,
+        chosenProject.status,
+      );
+      await this.mailService.sendProjectApplicationMailToStudent(
+        chosenProject.project,
+        student,
+        chosenProject.status,
+      );
+  
+      // Log activity
+      this.logActivity(
+        ActionType.APPLIED_FOR_PROJECT,
+        chosenProject.project.tutor.id,
+        id,
+        dto.projectId,
+      );
+  
       return {
         status: 201,
         message: 'successful',
         response: chosenProject,
       };
-
+  
     } catch (error) {
       return {
         status: 400,
@@ -534,6 +527,137 @@ Otherwise, proceed with saving the chosen project.
     }
   }
 
+  async chooseProject(
+    id: number,
+    dto: ChooseProjectDto,
+  ): Promise<BaseResponse> {
+    try {
+      // Step 1: Fetch student
+      const student = await this.studentProfileRepository.findOne({
+        where: { id: id },
+        relations: ['previousModules'],
+      });
+      if (!student) {
+        return { status: 404, message: 'student not found' };
+      }
+  
+      // Step 2: Fetch project with prerequisites
+      const project = await this.projectRepository.findOne({
+        where: { id: dto.projectId },
+        relations: ['prerequisiteModules'],
+      });
+      if (!project) {
+        return { status: 404, message: 'project not found' };
+      }
+  
+      // Step 3: Check if project was already chosen
+      const chosenProjectDb = await this.chosenProjectRepository.findOne({
+        where: {
+          project: { id: dto.projectId },
+          student: { id: id },
+        },
+      });
+      if (chosenProjectDb) {
+        return { status: 400, message: 'student has already chosen this project' };
+      }
+  
+      // Step 4: Fetch all current choices
+      let chosenProjects = await this.chosenProjectRepository.find({
+        where: { student: { id: id } },
+        order: { rank: 'ASC' },
+      });
+  
+      // Early block if already has 5 projects
+      if (chosenProjects.length >= 5) {
+        return { status: 400, message: 'You cannot choose more than 5 projects, remove one choice' };
+      }
+  
+      // Step 5: Shift ranks locally
+      for (let proj of chosenProjects) {
+        if (proj.rank >= dto.rank) {
+          proj.rank += 1;
+        }
+      }
+  
+      // Step 6: Split into saves and deletes
+      const toSave = chosenProjects.filter((p) => p.rank <= 5);
+      const toDelete = chosenProjects.filter((p) => p.rank > 5);
+  
+      // Batch save and delete
+      if (toSave.length > 0) {
+        await this.chosenProjectRepository.save(toSave);
+      }
+      if (toDelete.length > 0) {
+        await this.chosenProjectRepository.remove(toDelete);
+      }
+  
+      // Step 7: Reload choices after shifting
+      chosenProjects = await this.chosenProjectRepository.find({
+        where: { student: { id: id } },
+      });
+  
+      if (chosenProjects.length >= 5) {
+        return { status: 400, message: 'You cannot choose more than 5 projects' };
+      }
+  
+      // Step 8: Create new choice
+      const newChoice = new ChosenProject();
+      newChoice.project = project;
+      newChoice.student = student;
+      newChoice.rank = dto.rank;
+      newChoice.statementOfInterest = dto.statementOfInterest;
+      newChoice.statementOfInterestScore = dto.statementOfInterest === "" ? 0 : undefined;
+      newChoice.hasCommunicated = dto.hasCommunicated;
+  
+      // Step 9: Check prerequisites
+      const studentModules = new Set(student.previousModules.map((mod) => mod.id));
+      const missingModules = project.prerequisiteModules.filter(
+        (mod) => !studentModules.has(mod.id),
+      );
+  
+      newChoice.status = missingModules.length > 0
+        ? ChoiceStatus.NOT_SELECTED
+        : ChoiceStatus.APPLIED;
+  
+      const chosenProject = await this.chosenProjectRepository.save(newChoice);
+  
+      // Step 10: Send notification emails
+      await this.mailService.sendProjectApplicationMailToTutor(
+        chosenProject.project,
+        student,
+        chosenProject.status,
+      );
+      await this.mailService.sendProjectApplicationMailToStudent(
+        chosenProject.project,
+        student,
+        chosenProject.status,
+      );
+  
+      // Step 11: Log activity
+      this.logActivity(
+        ActionType.APPLIED_FOR_PROJECT,
+        chosenProject.project.tutor.id,
+        id,
+        dto.projectId,
+      );
+  
+      return {
+        status: 201,
+        message: 'successful',
+        response: chosenProject,
+      };
+  
+    } catch (error) {
+      console.error(error); // Always good for debugging in dev
+      return {
+        status: 400,
+        message: 'Bad Request',
+        response: error,
+      };
+    }
+  }
+  
+  
   // get projects chosen by student id
   async getStudentChoices(id: number): Promise<BaseResponse> {
     try {
