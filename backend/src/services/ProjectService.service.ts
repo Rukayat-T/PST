@@ -1332,7 +1332,7 @@ async getAllConflicts(adminId: number): Promise<BaseResponse>{
       where: {
         admin: {id: adminId}
       },
-      relations: ['admin', 'project']
+      relations: ['admin', 'project', 'project.tutor.user']
     }
     )
     if (!conflicts){
@@ -1361,7 +1361,7 @@ async getConflict(id: number): Promise<BaseResponse> {
       where:{
         id: id
       },
-      relations: ['project']
+      relations: ['project', 'project.tutor.user']
     })
     if (!conflict){
       return {
