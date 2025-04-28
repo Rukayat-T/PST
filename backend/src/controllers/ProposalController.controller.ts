@@ -15,6 +15,7 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ProposalService } from 'src/services/ProposalService.service';
+import { ProposalStatus } from 'src/util/ProposalStatus.enum';
 
 @ApiBearerAuth()
 @ApiTags('Proposal Controller')
@@ -91,5 +92,10 @@ export class ProposalController {
     @Param('proposalId') proposalId: number,
   ): Promise<BaseResponse> {
     return await this.proposalService.getProposal(proposalId);
+  }
+
+  @Put('updateProposalStatus/:proposalId/:status')
+  async proposalStatusUpdate( @Param('proposalId') proposalId: number, @Param('status') status: ProposalStatus): Promise<BaseResponse> {
+    return await this.proposalService.proposalStatusUpdate(proposalId, status);
   }
 }
