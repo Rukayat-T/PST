@@ -493,11 +493,12 @@ export class AuthService {
         id: student.student_id,
         name: student.user_name,
         email: student.user_email,
-        hasAssignedProject: !!student.assignedProject,
-        assignedProjectTitle: student.assignedProject?.title || null,
-        yearOfStudy: student.yearOfStudy,
-        department: student.department,
+        hasAssignedProject: !!student.assignedProject_id, // <--- FIXED
+        assignedProjectTitle: student.assignedProject_title || null, // <--- FIXED
+        yearOfStudy: student.student_yearOfStudy,
+        department: student.student_department,
       }));
+      
 
       return {
         status: 201,
