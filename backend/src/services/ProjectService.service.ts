@@ -873,7 +873,7 @@ export class ProjectService {
         };
       }
 
-      await this.chosenProjectRepository.delete(chosenProject);
+      await this.chosenProjectRepository.remove(chosenProject);
 
       return {
         status: 201,
