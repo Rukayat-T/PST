@@ -15,11 +15,12 @@ import { BaseResponse } from 'src/Responses/BaseResponse';
 import { ActionType } from 'src/util/ActionType.enum';
 import { ChoiceStatus } from 'src/util/ChoiceStatus.enum';
 import { ProjectStatus } from 'src/util/ProjectStatus.enum';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { RateStatement } from '../DTOs/RateSTatementDto.dto';
 import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
 import { AdminInputRequest } from 'src/entities/AdminInputRequest.enity';
 import { Not } from 'typeorm';
+import { UpdateProjectsRanks } from 'src/DTOs/UpdateProjectsRanksDto.dto';
 
 @Injectable()
 export class ProjectService {
@@ -1330,7 +1331,8 @@ async getAllConflicts(adminId: number): Promise<BaseResponse>{
   try {
     const conflicts = await this.adminInputRequstRepository.find({
       where: {
-        admin: {id: adminId}
+        admin: {id: adminId},
+        project: {status: ProjectStatus.ACTIVE}
       },
       relations: ['admin', 'project', 'project.tutor.user']
     }
@@ -1424,6 +1426,115 @@ async getConflictCommentsByProjectId(id: number): Promise<BaseResponse> {
     };
   }
 }
+
+async updateProjectsRanksold(studentId: number, dto: UpdateProjectsRanks): Promise<BaseResponse> {
+  try {
+
+    const student = await this.studentProfileRepository.findOne({
+      where: { id: studentId },
+      relations: [
+        'chosenProjects',
+        'chosenProjects.project',
+        'chosenProjects.project.tutor.user'
+        // 'chosenProjects.student ',
+      ],
+    });
+    if (!student) {
+      return {
+        status: 404,
+        message: 'student does not exist',
+      };
+    }
+
+    const choices = dto.choices
+    for(let choice of choices){
+      const checkChoice = await this.chosenProjectRepository.findOne({where: {id: choice.choiceId}})
+      if (!checkChoice) {
+        return {
+          status: 404,
+          message: 'student application does not exist',
+        };
+      }
+
+      checkChoice.rank = choice.rank
+      await this.chosenProjectRepository.save(checkChoice)
+    }
+
+    return {
+      status: 201,
+      message: 'successful',
+      response: '',
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
+async updateProjectsRanks(studentId: number, dto: UpdateProjectsRanks): Promise<BaseResponse> {
+  try {
+    const student = await this.studentProfileRepository.findOne({
+      where: { id: studentId },
+      relations: [
+        'chosenProjects',
+        'chosenProjects.project',
+        'chosenProjects.project.tutor.user',
+      ],
+    });
+
+    if (!student) {
+      return {
+        status: 404,
+        message: 'Student does not exist',
+      };
+    }
+
+    const choices = dto.choices;
+    const choiceIds = choices.map((c) => c.choiceId);
+
+    // Fetch all relevant ChosenProject entries in one query
+    const existingChoices = await this.chosenProjectRepository.findBy({
+      id: In(choiceIds),
+    });
+
+    // Optional: validate that all provided IDs exist
+    if (existingChoices.length !== choiceIds.length) {
+      return {
+        status: 404,
+        message: 'One or more project choices not found',
+      };
+    }
+
+    // Create a lookup for incoming ranks
+    const rankMap = new Map(choices.map((c) => [c.choiceId, c.rank]));
+
+    // Update ranks in memory
+    for (const choice of existingChoices) {
+      const newRank = rankMap.get(choice.id);
+      if (newRank !== undefined) {
+        choice.rank = newRank;
+      }
+    }
+
+    // Save all updates in a single DB call
+    await this.chosenProjectRepository.save(existingChoices);
+
+    return {
+      status: 200,
+      message: 'Ranks updated successfully',
+    };
+  } catch (error) {
+    return {
+      status: 400,
+      message: 'Bad Request',
+      response: error,
+    };
+  }
+}
+
 
 }
 

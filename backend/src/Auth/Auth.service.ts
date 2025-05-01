@@ -460,6 +460,7 @@ export class AuthService {
   async getAllStudentFilter(filters: any): Promise<BaseResponse> {
     const {
       search,
+      allocated,
       page = 1,
       limit = 15,
     } = filters;
@@ -467,13 +468,29 @@ export class AuthService {
     try {
       const query = this.studentProfileRepository
       .createQueryBuilder("student")
-      .leftJoinAndSelect("student.user", "user")
-      .leftJoinAndSelect("student.assignedProject", "assignedProject")
+      .leftJoin("student.user", "user")
+      .leftJoin("student.assignedProject", "assignedProject")
+      .addSelect([
+        "student.id",
+        "student.yearOfStudy",
+        "student.department",
+        "user.name",
+        "assignedProject.id",
+        "assignedProject.title"
+      ])
 
       if (search != undefined) {
         query.andWhere('user.name ILIKE :search OR user.email ILIKE :search', {
           search: `%${search}%`,
         });
+      }
+
+      if (allocated !== undefined) {
+        if (allocated === 'true') {
+          query.andWhere('assignedProject.id IS NOT NULL');
+        } else if (allocated === 'false') {
+          query.andWhere('assignedProject.id IS NULL');
+        }
       }
 
       const offset = (page - 1) * limit;
