@@ -92,6 +92,12 @@ export class AuthController {
       description: 'Search keyword for project title or description',
     })
     @ApiQuery({
+      name: 'allocated',
+      required: false,
+      type: Boolean,
+      description: 'Filter by students that have been allocated or not ',
+    })
+    @ApiQuery({
       name: 'page',
       required: false,
       type: Number,
@@ -105,6 +111,7 @@ export class AuthController {
     })
     async getAllStudents(
       @Query('search') search: string,
+      @Query('allocated') allocated: boolean,
       @Query('page') page: number = 1, // Default to page 1 if not provided
       @Query('limit') limit: number = 15, // Default to 15 results per page if not provided
     ): Promise<BaseResponse> {
@@ -112,6 +119,7 @@ export class AuthController {
         search,
         page,
         limit,
+        allocated
       };
       return await this.authService.getAllStudentFilter(filters);
     }

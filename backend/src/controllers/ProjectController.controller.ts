@@ -24,6 +24,7 @@ import { UpdateChoiceStatusDto } from 'src/DTOs/UpdateChoiceStatusDto.dto';
 import { RateStatement } from 'src/DTOs/RateSTatementDto.dto';
 import { CreateAdminInputDto } from 'src/DTOs/AdminInputRequestDto.dto';
 import { AdminCommentDto } from 'src/DTOs/AdminCommentDto';
+import { UpdateProjectsRanks } from '../DTOs/UpdateProjectsRanksDto.dto';
 
 @ApiBearerAuth()
 @ApiTags('Projects Controller')
@@ -299,6 +300,11 @@ export class ProjectController {
     return await this.projectService.editChoiceStatus(choiceId, updatechoiceDto)
   }
 
+  @Put("updateProjectsRanks/:studentId")
+  async updateProjectRanks(@Param('studentId') studentId: number, @Body() dto: UpdateProjectsRanks): Promise<any>{
+    return await this.projectService.updateProjectsRanks(studentId, dto);
+  }
+
   @Get("testMail")
   async testMail(): Promise<any>{
     return this.projectService.testMail()
@@ -342,5 +348,6 @@ export class ProjectController {
     return await this.projectService.getConflictCommentsByProjectId(projectId);
   }
 
+ 
   
 }

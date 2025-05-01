@@ -299,8 +299,8 @@ export class AdminDashboardService {
         status: 201,
         message: 'successful',
         response: {
-            unassignedCount,
-            assignedCount,
+            Unassigned: unassignedCount,
+            Assingned: assignedCount,
             total
         },
       };
